@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -97,15 +97,16 @@ const LoginPage = () => {
               </Button>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full gradient-button text-white font-medium text-lg px-8 py-6 rounded-2xl hover:opacity-90 transition-all duration-300 group"
-            >
-              <span className="mr-4">Let's Get Started</span>
-              <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ArrowRight className="w-6 h-6 text-primary" />
+            <div className="pt-4">
+              <div 
+                onClick={handleLogin}
+                className="w-full h-[70px] mx-auto p-5 bg-[rgba(85.29,68.65,179.60,0.86)] rounded-[15px] flex flex-col justify-center items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
+              >
+                <div className="text-white text-xl font-medium font-['Poppins'] leading-[23.51px]">
+                  Let's Get Started
+                </div>
               </div>
-            </Button>
+            </div>
 
             <div className="text-center">
               <span className="text-gray-700">Don't have an account? </span>
