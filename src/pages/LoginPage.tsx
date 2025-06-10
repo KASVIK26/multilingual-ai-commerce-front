@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -17,31 +17,27 @@ const LoginPage = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Add authentication logic here when Supabase is integrated
-    console.log("Login attempt:", formData);
-    navigate("/welcome");
+    // Navigate directly to dashboard for development
+    navigate("/dashboard");
   };
 
   return (
-    <div className="min-h-screen page-gradient flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
-      </div>
-
+    <div className="min-h-screen page-gradient flex items-center justify-center p-6">
       <Button
         onClick={() => navigate("/")}
         variant="ghost"
-        className="absolute top-6 left-6 text-white hover:bg-white/20 z-10"
+        className="absolute top-6 left-6 text-white hover:bg-white/20"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back
       </Button>
 
-      <Card className="w-full max-w-md glass-card backdrop-blur-lg border-white/30 relative z-10">
+      <Card className="w-full max-w-md bg-white/20 backdrop-blur-lg border-white/30">
         <CardHeader className="text-center">
-          <CardTitle className="gradient-text text-4xl font-bold">
+          <CardTitle 
+            className="gradient-text text-4xl font-bold"
+            style={{ fontFamily: 'Poppins' }}
+          >
             Welcome Back
           </CardTitle>
           <CardDescription className="text-gray-700 text-lg">
@@ -103,13 +99,12 @@ const LoginPage = () => {
 
             <Button
               type="submit"
-              className="w-full gradient-button text-white font-medium text-lg hover:opacity-90 transition-all duration-300"
-              style={{
-                height: '50px',
-                borderRadius: '15px'
-              }}
+              className="w-full gradient-button text-white font-medium text-lg px-8 py-6 rounded-2xl hover:opacity-90 transition-all duration-300 group"
             >
-              Sign In
+              <span className="mr-4">Let's Get Started</span>
+              <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ArrowRight className="w-6 h-6 text-primary" />
+              </div>
             </Button>
 
             <div className="text-center">

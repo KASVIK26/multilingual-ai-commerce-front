@@ -38,15 +38,19 @@ const Index = () => {
 
           {/* CTA Button */}
           <div className="pt-8">
-            <Button
+            <div 
               onClick={() => navigate("/login")}
-              className="gradient-button text-white font-medium text-lg md:text-xl px-8 py-6 rounded-2xl hover:opacity-90 transition-all duration-300 group"
+              className="w-[375px] h-[70px] mx-auto p-5 bg-[rgba(85.29,68.65,179.60,0.86)] rounded-[15px] flex flex-col justify-center items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
             >
-              <span className="mr-4">Let's Get Started</span>
-              <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ArrowRight className="w-6 h-6 text-primary" />
+              <div className="w-[243px] flex justify-between items-center">
+                <div className="text-white text-xl font-medium font-['Poppins'] leading-[23.51px]">
+                  Let's Get Started
+                </div>
+                <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center">
+                  <ArrowRight className="w-6 h-6 text-primary" />
+                </div>
               </div>
-            </Button>
+            </div>
           </div>
         </div>
 
