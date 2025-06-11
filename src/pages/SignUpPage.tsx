@@ -6,11 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,15 +23,46 @@ const SignUpPage = () => {
     confirmPassword: ""
   });
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords don't match. Please try again.",
+        variant: "destructive"
+      });
       return;
     }
-    // Add registration logic here when Supabase is integrated
-    console.log("Sign up attempt:", formData);
-    navigate("/welcome");
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await signUp(formData.email, formData.password, formData.fullName);
+      toast({
+        title: "Check Your Email",
+        description: "We've sent you a confirmation link. Please check your email to verify your account.",
+      });
+      // Don't navigate immediately, let user verify email first
+    } catch (error: any) {
+      console.error("Sign up error:", error);
+      toast({
+        title: "Sign Up Failed",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,7 +82,7 @@ const SignUpPage = () => {
         Back
       </Button>
 
-      <Card className="w-full max-w-md glass-card backdrop-blur-lg border-white/30 relative z-10">
+      <Card className="w-full max-w-md bg-white/10 backdrop-blur-lg border-white/30 relative z-10">
         <CardHeader className="text-center">
           <CardTitle className="gradient-text text-4xl font-bold">
             Join Us
@@ -69,6 +105,7 @@ const SignUpPage = () => {
                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                 className="bg-white/50 border-white/50 text-gray-800 placeholder:text-gray-600"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -84,6 +121,7 @@ const SignUpPage = () => {
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="bg-white/50 border-white/50 text-gray-800 placeholder:text-gray-600"
                 required
+                disabled={isLoading}
               />
             </div>
             
@@ -100,6 +138,7 @@ const SignUpPage = () => {
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   className="bg-white/50 border-white/50 text-gray-800 placeholder:text-gray-600 pr-10"
                   required
+                  disabled={isLoading}
                 />
                 <Button
                   type="button"
@@ -107,6 +146,7 @@ const SignUpPage = () => {
                   size="sm"
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </Button>
@@ -126,6 +166,7 @@ const SignUpPage = () => {
                   onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                   className="bg-white/50 border-white/50 text-gray-800 placeholder:text-gray-600 pr-10"
                   required
+                  disabled={isLoading}
                 />
                 <Button
                   type="button"
@@ -133,6 +174,7 @@ const SignUpPage = () => {
                   size="sm"
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isLoading}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </Button>
@@ -140,7 +182,7 @@ const SignUpPage = () => {
             </div>
 
             <div className="flex items-center space-x-2">
-              <input type="checkbox" className="rounded" required />
+              <input type="checkbox" className="rounded" required disabled={isLoading} />
               <label className="text-sm text-gray-700">
                 I agree to the <span className="text-[#6750A4] font-medium">Terms & Conditions</span>
               </label>
@@ -153,8 +195,9 @@ const SignUpPage = () => {
                 height: '50px',
                 borderRadius: '15px'
               }}
+              disabled={isLoading}
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
 
             <div className="text-center">
@@ -163,6 +206,7 @@ const SignUpPage = () => {
                 variant="link"
                 onClick={() => navigate("/login")}
                 className="text-[#6750A4] hover:text-[#5A09ED] p-0 font-medium"
+                disabled={isLoading}
               >
                 Sign in
               </Button>

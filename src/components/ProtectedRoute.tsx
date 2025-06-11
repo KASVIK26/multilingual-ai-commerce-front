@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -9,6 +10,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const { toast } = useToast();
 
   if (loading) {
     return (
@@ -22,6 +24,16 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Check if email is confirmed (optional - remove if not needed)
+  if (user.emailConfirmed === false) {
+    toast({
+      title: "Email Verification Required",
+      description: "Please check your email and verify your account to access this page.",
+      variant: "destructive"
+    });
     return <Navigate to="/login" replace />;
   }
 
