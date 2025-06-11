@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 const Header = () => {
@@ -22,7 +21,11 @@ const Header = () => {
       <div className="flex justify-start items-center gap-2.5">
         <form onSubmit={handleSearch} className="w-64 h-11 px-2.5 py-3 bg-gray-200 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-zinc-100 inline-flex flex-col justify-center items-start gap-2.5 overflow-hidden">
           <div className="self-stretch inline-flex justify-start items-center gap-2.5">
-            <div className="w-3.5 h-3.5 outline outline-[1.40px] outline-offset-[-0.70px] outline-neutral-500" />
+            <img 
+              src="/index_page/Group 6.svg" 
+              alt="Search" 
+              className="w-3.5 h-3.5"
+            />
             <input
               type="text"
               value={searchQuery}
@@ -33,7 +36,11 @@ const Header = () => {
           </div>
         </form>
         <button className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors">
-          <div className="w-3.5 h-3 outline outline-[1.40px] outline-offset-[-0.70px] outline-black" />
+          <img 
+            src="/index_page/Group 4.svg" 
+            alt="Notifications" 
+            className="w-3.5 h-3"
+          />
         </button>
         <img 
           className="w-11 h-11 rounded-full cursor-pointer hover:scale-105 transition-transform" 

@@ -18,29 +18,29 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen px-6 text-left ">
         <div className="max-w-4xl mx-auto space-y-10">
           {/* Hero Text */}
           <div className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-primary">
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-medium text-primary tracking-normal ">
                 Welcome to
               </h1>
-              <h1 className="text-6xl md:text-7xl lg:text-9xl font-bold gradient-text leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold gradient-text leading-[1.2] pb-3">
                 Multilingual AI
               </h1>
             </div>
             
-            <p className="text-xl md:text-2xl lg:text-3xl text-gray-700 font-medium italic max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl lg:text-2xl text-gray-700 font-medium italic max-w-3xl mx-auto leading-relaxed">
               "Technology that listens. Support that understands."
             </p>
           </div>
 
           {/* CTA Button */}
-          <div className="pt-8">
+          <div className="pt-8" >
             <div 
               onClick={() => navigate("/login")}
-              className="w-[375px] h-[70px] mx-auto p-5 bg-[rgba(85.29,68.65,179.60,0.86)] rounded-[15px] flex flex-col justify-center items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
+              className="w-[375px] h-[60px] mx-auto p-5 bg-[rgba(85.29,68.65,179.60,0.86)] rounded-[15px] flex flex-col justify-center items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
             >
               <div className="w-[243px] flex justify-between items-center">
                 <div className="text-white text-xl font-medium font-['Poppins'] leading-[23.51px]">

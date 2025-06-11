@@ -1,5 +1,5 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface User {
   id: string;
@@ -33,69 +33,88 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Listen to auth state changes and set user
   useEffect(() => {
-    // Check for existing session on mount
-    const checkUser = async () => {
-      try {
-        // This will be replaced with Supabase auth check
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('Error checking user session:', error);
-      } finally {
-        setLoading(false);
+    const getUser = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email ?? '',
+          fullName: data.user.user_metadata?.fullName || data.user.user_metadata?.full_name || '',
+        });
+      } else {
+        setUser(null);
       }
+      setLoading(false);
     };
 
-    checkUser();
+    getUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email ?? '',
+          fullName: session.user.user_metadata?.fullName || session.user.user_metadata?.full_name || '',
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      // This will be replaced with Supabase auth
-      // For now, simulate a successful login
-      const mockUser = { id: '1', email, fullName: 'User' };
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
-    } finally {
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
       setLoading(false);
+      throw error;
     }
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email ?? '',
+        fullName: data.user.user_metadata?.fullName || data.user.user_metadata?.full_name || '',
+      });
+    }
+    setLoading(false);
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    try {
-      setLoading(true);
-      // This will be replaced with Supabase auth
-      // For now, simulate a successful signup
-      const mockUser = { id: '1', email, fullName };
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Error signing up:', error);
-      throw error;
-    } finally {
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { fullName },
+      },
+    });
+    if (error) {
       setLoading(false);
+      throw error;
     }
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email ?? '',
+        fullName,
+      });
+    }
+    setLoading(false);
   };
 
   const signOut = async () => {
-    try {
-      setLoading(true);
-      // This will be replaced with Supabase auth
-      setUser(null);
-      localStorage.removeItem('user');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const { error } = await supabase.auth.signOut();
+    setUser(null);
+    setLoading(false);
+    if (error) throw error;
   };
 
   const value = {

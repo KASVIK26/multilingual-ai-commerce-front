@@ -1,13 +1,30 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Grid } from 'lucide-react'; // Add this import at the top
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState('Home');
 
   const menuItems = [
-    { name: 'Home', icon: '⊞', path: '/dashboard' },
-    { name: 'New Chat', icon: '💬', path: '/chat' }
+  { 
+    name: 'Home', 
+    icon: <img 
+            src="/index_page/01 align center (1).svg" 
+            alt="Home" 
+            className="w-4 h-4"
+          />, 
+    path: '/dashboard' 
+  },
+  { 
+    name: 'New Chat', 
+    icon: <img 
+            src="/index_page/01 align center (2).svg" 
+            alt="New Chat" 
+            className="w-4 h-4"
+          />, 
+    path: '/chat' 
+  }
   ];
 
   const conversationItems = [
@@ -47,7 +64,13 @@ const Sidebar = () => {
       <div className="w-80 h-80 absolute left-[132px] top-[867px] opacity-75 bg-gradient-to-b from-green-500 to-amber-300 rounded-full blur-[184.05px]" />
       
       <div className="w-72 absolute left-[21px] top-[20px] inline-flex flex-col justify-start items-center gap-9 relative z-10">
-        <div className="self-stretch text-center justify-center text-violet-700 text-3xl font-bold font-['Poppins']">
+        <div className="self-stretch text-center justify-center text-violet-700 text-3xl font-bold font-['Poppins']"
+          style={{
+          background: 'linear-gradient(91deg, #3B00FE -4.68%, #991DCB 47.93%, #004998 99.54%)',
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
           Multilingual AI
         </div>
         
@@ -58,35 +81,22 @@ const Sidebar = () => {
               key={item.name}
               onClick={() => handleMenuClick(item)}
               className={`self-stretch h-14 px-2.5 py-3.5 rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden transition-colors ${
-                activeItem === item.name || (index === 0 && window.location.pathname === '/dashboard') || (index === 1 && window.location.pathname === '/chat')
+                activeItem === item.name 
                   ? 'bg-blue-700'
-                  : index === 1 && window.location.pathname === '/chat'
-                  ? 'bg-gradient-to-r from-slate-950 to-blue-900'
-                  : index === 0 && window.location.pathname === '/dashboard'
-                  ? 'bg-neutral-100/40'
+                  : window.location.pathname === item.path
+                  ? 'bg-blue-700'
                   : 'bg-gradient-to-r from-slate-950 to-blue-900'
               }`}
             >
               <div className="w-64 inline-flex justify-between items-center">
                 <div className={`justify-center text-sm font-normal font-['Poppins'] ${
-                  (index === 0 && window.location.pathname === '/dashboard') ? 'text-black' : 'text-stone-50'
+                  activeItem === item.name || window.location.pathname === item.path
+                    ? 'text-stone-50'
+                    : 'text-stone-50'
                 }`}>
                   {item.name}
                 </div>
-                <div className="w-4 h-4 relative overflow-hidden">
-                  <div className={`w-2 h-2 left-0 top-0 absolute ${
-                    (index === 0 && window.location.pathname === '/dashboard') ? 'bg-black' : 'bg-stone-50'
-                  }`} />
-                  <div className={`w-2 h-2 left-[9.75px] top-0 absolute ${
-                    (index === 0 && window.location.pathname === '/dashboard') ? 'bg-black' : 'bg-stone-50'
-                  }`} />
-                  <div className={`w-2 h-2 left-0 top-[9.75px] absolute ${
-                    (index === 0 && window.location.pathname === '/dashboard') ? 'bg-black' : 'bg-stone-50'
-                  }`} />
-                  <div className={`w-2 h-2 left-[9.75px] top-[9.75px] absolute ${
-                    (index === 0 && window.location.pathname === '/dashboard') ? 'bg-black' : 'bg-stone-50'
-                  }`} />
-                </div>
+                {item.icon}
               </div>
             </button>
           ))}
@@ -191,29 +201,38 @@ const Sidebar = () => {
         </div>
 
         {/* Account Section */}
-        <div className="self-stretch px-2.5 py-3 bg-slate-950 rounded-2xl outline outline-1 outline-offset-[-1px] flex flex-col justify-start items-start gap-2.5 overflow-hidden">
-          <button className="w-72 h-9 px-2.5 py-[5px] bg-gradient-to-r from-violet-700 via-purple-700 to-sky-800 rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden">
+        {/* Account Section */}
+        <div className="self-stretch px-2.5 py-3 bg-slate-950 rounded-2xl outline outline-1 outline-offset-[-1px] inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden">
+          {/* My Account Button */}
+          <div className="w-[268px] h-9 px-2.5 py-[5px] bg-gradient-to-r from-violet-700 via-purple-700 to-sky-800 rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden">
             <div className="self-stretch inline-flex justify-between items-center">
               <div className="justify-center text-white text-sm font-normal font-['Poppins']">
                 My Account
               </div>
-              <div className="w-4 h-4 outline outline-[1.20px] outline-offset-[-0.60px] outline-white" />
+              <img 
+                src="/index_page/Group (1).svg" 
+                alt="Account Icon" 
+                className="w-4 h-4"
+              />
             </div>
-          </button>
-          <button
+          </div>
+
+          {/* Logout Button */}
+          <div 
+            className="w-[270px] h-9 px-2.5 py-[5px] rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
             onClick={handleLogout}
-            className="w-72 h-9 px-2.5 py-[5px] rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-800 transition-colors"
           >
             <div className="self-stretch inline-flex justify-between items-center">
               <div className="justify-center text-stone-50 text-sm font-normal font-['Poppins']">
                 Log Out
               </div>
-              <div className="w-4 h-4 relative overflow-hidden">
-                <div className="w-1.5 h-4 left-0 top-0 absolute bg-stone-50" />
-                <div className="w-3.5 h-2.5 left-[3.75px] top-[3.97px] absolute bg-stone-50" />
-              </div>
+              <img 
+                src="/index_page/01 align center.svg" 
+                alt="Logout Icon" 
+                className="w-4 h-4"
+              />
             </div>
-          </button>
+          </div>
         </div>
       </div>
     </div>

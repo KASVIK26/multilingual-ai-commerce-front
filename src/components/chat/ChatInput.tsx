@@ -1,4 +1,3 @@
-
 interface ChatInputProps {
   message: string;
   setMessage: (message: string) => void;
@@ -16,14 +15,24 @@ const ChatInput = ({ message, setMessage, onSendMessage }: ChatInputProps) => {
   return (
     <div className="self-stretch inline-flex justify-center items-center gap-2.5">
       <button className="w-16 h-16 px-5 py-3.5 bg-zinc-100 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex justify-center items-center gap-2.5 overflow-hidden hover:bg-zinc-200 transition-colors">
-        <div className="w-6 h-6 bg-gradient-to-b from-sky-800 via-violet-700 to-purple-700" />
+        <div className="w-6 h-6 relative overflow-hidden">
+          <img 
+            src="/index_page/Vector (3).svg"
+            alt="Dropdown"
+            className="w-6 h-6"
+          />
+        </div>
       </button>
       
       <div className="w-[856px] h-16 p-5 bg-zinc-100 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex justify-start items-center gap-2.5 overflow-hidden">
         <div className="w-[816px] flex justify-between items-center">
-          <div className="w-48 flex justify-start items-center gap-3.5">
-            <div className="w-6 h-6 relative overflow-hidden">
-              <div className="w-5 h-5 left-[2.08px] top-[1.45px] absolute outline outline-2 outline-offset-[-1px] outline-black" />
+          <div className="flex-1 flex justify-start items-center gap-3.5">
+            <div className="w-6 h-6 relative overflow-hidden flex-shrink-0">
+              <img 
+                src="/index_page/paperclip.svg"
+                alt="Attach"
+                className="w-6 h-6"
+              />
             </div>
             <input
               type="text"
@@ -37,18 +46,26 @@ const ChatInput = ({ message, setMessage, onSendMessage }: ChatInputProps) => {
           <div className="flex justify-start items-center gap-2.5">
             <button 
               onClick={onSendMessage}
-              className="w-4 h-2.5 outline outline-2 outline-offset-[-1px] outline-blue-700 hover:bg-blue-700 transition-colors"
-            />
-            <button className="w-5 h-7 outline outline-2 outline-offset-[-1px] outline-blue-700 hover:bg-blue-700 transition-colors" />
+              className="w-8 h-8 relative overflow-hidden hover:scale-110 active:scale-95 transition-transform duration-150 ease-in-out"
+            >
+              <img 
+                src="/index_page/Group 1.svg"
+                alt="Send"
+                className="w-8 h-8"
+              />
+            </button>
           </div>
         </div>
       </div>
       
       <button className="w-16 h-16 px-5 py-3.5 bg-zinc-100 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex justify-center items-center gap-2.5 overflow-hidden hover:bg-zinc-200 transition-colors">
-        <div className="w-2 h-4 bg-black outline outline-[2.50px] outline-offset-[-1.25px] outline-black" />
-        <div className="w-4 h-3 outline outline-[2.50px] outline-offset-[-1.25px] outline-black" />
-        <div className="w-0 h-[5.14px] outline outline-[2.50px] outline-offset-[-1.25px] outline-black" />
-        <div className="w-2.5 h-0 outline outline-[2.50px] outline-offset-[-1.25px] outline-black" />
+        <div className="w-8 h-8 relative overflow-hidden">
+          <img 
+            src="/index_page/Group 2.svg"
+            alt="Dropdown"
+            className="w-8 h-8"
+          />
+        </div>
       </button>
     </div>
   );

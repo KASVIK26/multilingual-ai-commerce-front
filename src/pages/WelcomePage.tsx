@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogOut, MessageCircle, Globe, Zap } from "lucide-react";
@@ -38,7 +37,7 @@ const WelcomePage = () => {
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Hero Section */}
           <div className="space-y-6">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold gradient-text leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold gradient-text leading-none whitespace-nowrap">
               Multilingual AI
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-3xl mx-auto">
