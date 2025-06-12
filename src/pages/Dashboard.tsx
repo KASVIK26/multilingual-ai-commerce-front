@@ -53,12 +53,12 @@ const Dashboard = () => {
                 <div className="justify-center text-neutral-500 group-hover:text-neutral-400 text-[10px] font-normal font-['Poppins'] transition-colors">last month</div>
               </div>
             </div>
-            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-              <img 
-                src="/index_page/01 align center (3).svg"
-                alt="Menu"
-                className="w-4 h-4"
-              />
+            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="white"/>
+                <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="white"/>
+                <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="white"/>
+              </svg>
             </button>
           </div>
           <div className="left-[153px] top-[83px] absolute inline-flex justify-start items-end gap-1">
@@ -83,7 +83,7 @@ const Dashboard = () => {
               <div className="self-stretch inline-flex justify-start items-center gap-[5px]">
                 <div className="w-12 px-[5px] py-[3px] bg-red-200 rounded-[5px] inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden">
                   <div className="inline-flex justify-start items-center gap-[5px]">
-                    <div className="w-3.5 h-2  outline-[1.20px] outline-offset-[-0.60px] outline-red-800" >
+                    <div className="w-3.5 h-2 outline-[1.20px] outline-offset-[-0.60px] outline-red-800">
                       <img 
                         src="/index_page/Group 5 (3).svg"
                         alt="Down indicator"
@@ -96,12 +96,12 @@ const Dashboard = () => {
                 <div className="justify-center text-neutral-500 text-[10px] font-normal font-['Poppins']">last month</div>
               </div>
             </div>
-            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-              <img 
-                src="/index_page/01 align center (3).svg"
-                alt="Menu"
-                className="w-4 h-4"
-              />
+            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="white"/>
+                <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="white"/>
+                <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="white"/>
+              </svg>
             </button>
           </div>
           <div className="left-[153px] top-[83px] absolute inline-flex justify-start items-end gap-1">
@@ -126,11 +126,11 @@ const Dashboard = () => {
               <div className="self-stretch inline-flex justify-start items-center gap-[5px]">
                 <div className="w-12 px-[5px] py-[3px] bg-lime-200 rounded-[5px] inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden">
                   <div className="inline-flex justify-start items-center gap-[5px]">
-                    <div className="w-3.5 h-2  outline-[1.20px] outline-offset-[-0.60px] outline-green-700" >
+                    <div className="w-3.5 h-2 outline-[1.20px] outline-offset-[-0.60px] outline-green-700">
                       <img 
-                      src="/index_page/Group 5 (2).svg"
-                      alt="Growth indicator"
-                      className="w-3.5 h-2"
+                        src="/index_page/Group 5 (2).svg"
+                        alt="Growth indicator"
+                        className="w-3.5 h-2"
                       />
                     </div>
                     <div className="justify-center text-green-700 text-[10px] font-medium font-['Poppins']">+15%</div>
@@ -139,12 +139,12 @@ const Dashboard = () => {
                 <div className="justify-center text-neutral-500 text-[10px] font-normal font-['Poppins']">last month</div>
               </div>
             </div>
-            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-              <img 
-                src="/index_page/01 align center (3).svg"
-                alt="Menu"
-                className="w-4 h-4"
-              />
+            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="white"/>
+                <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="white"/>
+                <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="white"/>
+              </svg>
             </button>
           </div>
           <div className="left-[153px] top-[83px] absolute inline-flex justify-start items-end gap-1">
@@ -169,11 +169,11 @@ const Dashboard = () => {
               <div className="self-stretch inline-flex justify-start items-center gap-[5px]">
                 <div className="w-12 px-[5px] py-[3px] bg-lime-200 rounded-[5px] inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden">
                   <div className="inline-flex justify-start items-center gap-[5px]">
-                    <div className="w-3.5 h-2  outline-[1.20px] outline-offset-[-0.60px] outline-green-700" >
+                    <div className="w-3.5 h-2 outline-[1.20px] outline-offset-[-0.60px] outline-green-700">
                       <img 
-                      src="/index_page/Group 5 (2).svg"
-                      alt="Growth indicator"
-                      className="w-3.5 h-2"
+                        src="/index_page/Group 5 (2).svg"
+                        alt="Growth indicator"
+                        className="w-3.5 h-2"
                       />
                     </div>
                     <div className="justify-center text-green-700 text-[10px] font-medium font-['Poppins']">+8%</div>
@@ -182,12 +182,12 @@ const Dashboard = () => {
                 <div className="justify-center text-neutral-500 text-[10px] font-normal font-['Poppins']">last month</div>
               </div>
             </div>
-            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-              <img 
-                src="/index_page/01 align center (3).svg"
-                alt="Menu"
-                className="w-4 h-4"
-              />
+            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="white"/>
+                <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="white"/>
+                <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="white"/>
+              </svg>
             </button>
           </div>
           <div className="left-[153px] top-[83px] absolute inline-flex justify-start items-end gap-1">
@@ -251,12 +251,12 @@ const Dashboard = () => {
             {/* Title and Menu */}
             <div className="self-stretch inline-flex justify-between items-center">
               <div className="w-56 justify-center text-zinc-600 text-base font-normal font-['Poppins']">Total Revenue</div>
-              <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-                <img 
-                  src="/index_page/01 align center (3).svg"
-                  alt="Menu"
-                  className="w-4 h-4"
-                />
+              <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+                <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="black"/>
+                  <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="black"/>
+                  <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="black"/>
+                </svg>
               </button>
             </div>
             
@@ -377,12 +377,12 @@ const Dashboard = () => {
           {/* Header */}
           <div className="w-[487px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
             <div className="justify-center text-zinc-600 text-base font-normal font-['Poppins']">Where You Spend the Most</div>
-            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-              <img 
-                src="/index_page/01 align center (3).svg"
-                alt="Menu"
-                className="w-4 h-4"
-              />
+            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="black"/>
+                <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="black"/>
+                <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="black"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -492,12 +492,12 @@ const Dashboard = () => {
               </div>
               <div className="text-zinc-600 text-base font-normal font-['Poppins']">Quick Alerts</div>
             </div>
-            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
-              <img 
-                src="/index_page/01 align center (3).svg"
-                alt="Menu"
-                className="w-4 h-4"
-              />
+            <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity group">
+              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" viewBox="0 0 18 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 3.00024C2.32843 3.00024 3 2.32867 3 1.50024C3 0.671816 2.32843 0.000244141 1.5 0.000244141C0.671573 0.000244141 0 0.671816 0 1.50024C0 2.32867 0.671573 3.00024 1.5 3.00024Z" fill="black"/>
+                <path d="M9 3.00024C9.82842 3.00024 10.5 2.32867 10.5 1.50024C10.5 0.671816 9.82842 0.000244141 9 0.000244141C8.17157 0.000244141 7.5 0.671816 7.5 1.50024C7.5 2.32867 8.17157 3.00024 9 3.00024Z" fill="black"/>
+                <path d="M16.5002 3.00024C17.3287 3.00024 18.0002 2.32867 18.0002 1.50024C18.0002 0.671816 17.3287 0.000244141 16.5002 0.000244141C15.6718 0.000244141 15.0002 0.671816 15.0002 1.50024C15.0002 2.32867 15.6718 3.00024 16.5002 3.00024Z" fill="black"/>
+              </svg>
             </button>
           </div>
           <div className="w-[322px] h-0 left-[10px] top-[47px] absolute border-t border-zinc-400"></div>
