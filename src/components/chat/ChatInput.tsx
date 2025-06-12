@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 interface ChatInputProps {
   message: string;
   setMessage: (message: string) => void;
@@ -28,8 +30,10 @@ const ChatInput = ({ message, setMessage, onSendMessage }: ChatInputProps) => {
       <div className="w-[856px] h-16 p-5 bg-zinc-100 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex justify-start items-center gap-2.5 overflow-hidden hover:bg-zinc-50 transition-colors">
         <div className="w-[816px] flex justify-between items-center">
           <div className="w-48 flex justify-start items-center gap-3.5">
-            <svg className="w-6 h-6" viewBox="0 0 17 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14.8434 2.14929C14.4768 1.78493 14.0417 1.4959 13.5627 1.2987C13.0837 1.1015 12.5704 1 12.0519 1C11.5335 1 11.0201 1.1015 10.5411 1.2987C10.0621 1.4959 9.62698 1.78493 9.26046 2.14929L8.49981 2.90512L7.73916 2.14929C6.99882 1.41366 5.9947 1.00038 4.94771 1.00038C3.90071 1.00038 2.89659 1.41366 2.15626 2.14929C1.41592 2.88493 1 3.88267 1 4.92302C1 5.96336 1.41592 6.9611 2.15626 7.69674L2.91691 8.45256L8.49981 14L14.0827 8.45256L14.8434 7.69674C15.21 7.33255 15.5009 6.90014 15.6994 6.42422C15.8979 5.94829 16 5.43818 16 4.92302C16 4.40785 15.8979 3.89774 15.6994 3.42182C15.5009 2.94589 15.21 2.51348 14.8434 2.14929Z" stroke="black" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg className="w-4 h-4" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.6671 5.16659L8.50041 0.999878L4.33374 5.16659" stroke="#0027ED" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8.5 0.999878V11" stroke="#0027ED" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M16 11V14.3334C16 14.7754 15.8244 15.1993 15.5118 15.5119C15.1993 15.8245 14.7754 16.0001 14.3333 16.0001H2.66667C2.22464 16.0001 1.80072 15.8245 1.48816 15.5119C1.17559 15.1993 1 14.7754 1 14.3334V11" stroke="#0027ED" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <input
               type="text"
@@ -40,12 +44,7 @@ const ChatInput = ({ message, setMessage, onSendMessage }: ChatInputProps) => {
             />
           </div>
           <div className="flex justify-start items-center gap-2.5">
-            <svg className="w-4 h-3" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 11V14.3334C16 14.7754 15.8244 15.1993 15.5118 15.5119C15.1993 15.8245 14.7754 16.0001 14.3333 16.0001H2.66667C2.22464 16.0001 1.80072 15.8245 1.48816 15.5119C1.17559 15.1993 1 14.7754 1 14.3334V11" stroke="#0027ED" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12.6671 5.16659L8.50041 0.999878L4.33374 5.16659" stroke="#0027ED" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8.5 0.999878V11" stroke="#0027ED" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <svg className="w-5 h-7" viewBox="0 0 21 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-6" viewBox="0 0 21 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M10.4997 1.85718C9.47674 1.85718 8.49566 2.26355 7.77231 2.98691C7.04895 3.71026 6.64258 4.69134 6.64258 5.71431V16C6.64258 17.023 7.04895 18.0041 7.77231 18.7274C8.49566 19.4508 9.47674 19.8571 10.4997 19.8571C11.5227 19.8571 12.5038 19.4508 13.2271 18.7274C13.9505 18.0041 14.3569 17.023 14.3569 16V5.71431C14.3569 4.69134 13.9505 3.71026 13.2271 2.98691C12.5038 2.26355 11.5227 1.85718 10.4997 1.85718Z" fill="#0027ED" stroke="#0027ED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M19.5 13.429V16.0004C19.5 18.3873 18.5518 20.6765 16.864 22.3643C15.1761 24.0522 12.8869 25.0004 10.5 25.0004C8.11305 25.0004 5.82387 24.0522 4.13604 22.3643C2.44821 20.6765 1.5 18.3873 1.5 16.0004V13.429" stroke="#0027ED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M10.5 24.9998V30.1426" stroke="#0027ED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -58,7 +57,7 @@ const ChatInput = ({ message, setMessage, onSendMessage }: ChatInputProps) => {
         type="submit"
         className="w-16 h-16 px-5 py-3.5 bg-zinc-100 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex justify-center items-center gap-2.5 overflow-hidden hover:bg-zinc-200 transition-colors cursor-pointer"
       >
-        <svg className="w-4 h-4" viewBox="0 0 37 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-6 h-6" viewBox="0 0 37 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M35.9998 17.9998H16.5544" stroke="#0028ED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M35.9999 17.9999L12.1351 29.4904L16.5545 17.9999L12.1351 6.50945L35.9999 17.9999Z" stroke="#0028ED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
