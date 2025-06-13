@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { X, User, Settings, CreditCard, Package, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfileCardProps {
   isOpen: boolean;
@@ -15,10 +16,12 @@ interface ProfileCardProps {
 }
 
 const ProfileCard = ({ isOpen, onClose, user, onLogout }: ProfileCardProps) => {
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
 
   const menuItems = [
-    { icon: User, label: 'My Profile', action: () => console.log('Profile') },
+    { icon: User, label: 'My Profile', action: () => { onClose(); navigate('/my-account'); } },
     { icon: Package, label: 'My Orders', action: () => console.log('Orders') },
     { icon: CreditCard, label: 'Payment Methods', action: () => console.log('Payments') },
     { icon: Settings, label: 'Account Settings', action: () => console.log('Settings') },
