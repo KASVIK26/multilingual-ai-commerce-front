@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Search, Bell, User, ChevronDown } from 'lucide-react';
+import { Search, Bell, User, ChevronDown, ShoppingCart } from 'lucide-react';
 import ProfileCard from './ProfileCard';
 import NotificationCard from './NotificationCard';
+import { useCart } from '@/hooks/useCart';
 
 const ChatHeader = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { cartItems, isCartOpen, setIsCartOpen } = useCart();
 
   // Mock user data
   const user = {
@@ -66,6 +68,17 @@ const ChatHeader = () => {
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {unreadCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setIsCartOpen(!isCartOpen)}
+            className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer relative"
+          >
+            <ShoppingCart size={16} />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {cartItems.length}
               </span>
             )}
           </button>
