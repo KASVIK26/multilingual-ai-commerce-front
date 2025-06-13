@@ -1,18 +1,47 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 const Header = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+      
+      if (data) {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Searching for:', searchQuery);
   };
 
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+
   return (
-    <div className="w-[1042px] inline-flex justify-between items-start">
+    <div className="w-full inline-flex justify-between items-start">
       <div className="w-52 inline-flex flex-col justify-start items-start">
         <div className="self-stretch justify-center text-black text-2xl font-medium font-['Poppins']">
-          Welcome Alex!
+          Welcome {displayName}!
         </div>
         <div className="self-stretch justify-center text-neutral-500 text-base font-normal font-['Poppins']">
           How can we help you today?
@@ -42,11 +71,17 @@ const Header = () => {
             className="w-3.5 h-3"
           />
         </button>
-        <img 
-          className="w-11 h-11 rounded-full cursor-pointer hover:scale-105 transition-transform" 
-          src="/lovable-uploads/4611ef25-3afc-4fab-878a-73148d92d35d.png" 
-          alt="Profile"
-        />
+        {profile?.avatar_url ? (
+          <img 
+            className="w-11 h-11 rounded-full cursor-pointer hover:scale-105 transition-transform object-cover" 
+            src={profile.avatar_url} 
+            alt="Profile"
+          />
+        ) : (
+          <div className="w-11 h-11 rounded-full cursor-pointer hover:scale-105 transition-transform bg-blue-500 flex items-center justify-center text-white font-medium">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+        )}
       </div>
     </div>
   );
