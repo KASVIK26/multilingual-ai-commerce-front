@@ -47,17 +47,22 @@ const ChatHeader = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const handleCartClick = () => {
+    console.log('Cart clicked, current state:', isCartOpen);
+    setIsCartOpen(!isCartOpen);
+  };
+
   return (
     <>
-      <div className="w-[1042px] inline-flex justify-between items-center">
-        <div className="w-36 h-11 p-3.5 bg-gray-200 rounded-[10px] inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
-          <div className="self-stretch inline-flex justify-between items-center">
-            <div className="justify-center text-black text-base font-normal font-['Poppins']">English</div>
+      <div className="w-full flex justify-between items-center">
+        <div className="w-36 h-11 p-3.5 bg-gray-200 rounded-[10px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
+          <div className="flex justify-between items-center w-full">
+            <div className="text-black text-base font-normal font-['Poppins']">English</div>
             <ChevronDown size={16} />
           </div>
         </div>
         <div className="flex justify-start items-center gap-2.5">
-          <button className="w-11 h-11 bg-gray-200 rounded-[35px] inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
+          <button className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
             <Search size={16} />
           </button>
           <button 
@@ -72,7 +77,7 @@ const ChatHeader = () => {
             )}
           </button>
           <button
-            onClick={() => setIsCartOpen(!isCartOpen)}
+            onClick={handleCartClick}
             className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer relative"
           >
             <ShoppingCart size={16} />
