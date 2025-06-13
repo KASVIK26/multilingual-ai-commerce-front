@@ -48,7 +48,7 @@ const ChatHeader = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleCartClick = () => {
-    console.log('Cart clicked, setting to:', !isCartOpen);
+    console.log('Cart clicked, current state:', isCartOpen);
     setIsCartOpen(!isCartOpen);
   };
 
