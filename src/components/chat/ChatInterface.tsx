@@ -30,7 +30,7 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-screen w-screen">
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <style>
@@ -45,13 +45,13 @@ const ChatInterface = () => {
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center">
               {/* Center ML Icon and Greeting */}
-              <div className="w-[478px] h-[477px] relative mb-8">
-                <div className="w-[477px] h-[477px] left-0 top-0 absolute opacity-60 bg-gradient-to-br from-green-500/60 via-violet-700/60 to-amber-300/60 rounded-full blur-[150px] backdrop-blur-[2px]" />
-                <div className="w-[478px] left-0 top-[173px] absolute inline-flex flex-col justify-center items-center gap-2.5">
+              <div className="w-[min(478px,90vw)] h-[min(477px,90vw)] relative mb-8">
+                <div className="w-[min(477px,90vw)] h-[min(477px,90vw)] left-0 top-0 absolute opacity-60 bg-gradient-to-br from-green-500/60 via-violet-700/60 to-amber-300/60 rounded-full blur-[150px] backdrop-blur-[2px]" />
+                <div className="w-full left-0 top-[36%] absolute inline-flex flex-col justify-center items-center gap-2.5">
                   <div className="w-20 h-20 px-3.5 py-3 bg-gradient-to-b from-violet-700 via-purple-700 to-sky-800/75 rounded-[37px] flex flex-col justify-center items-center gap-2.5">
                     <div className="text-center justify-center text-white text-3xl font-bold font-['Poppins']">ML</div>
                   </div>
-                  <div className="justify-center text-black text-3xl font-medium font-['Poppins']">How can I help you today?</div>
+                  <div className="justify-center text-black text-3xl font-medium font-['Poppins'] text-center">How can I help you today?</div>
                 </div>
               </div>
               
@@ -59,7 +59,7 @@ const ChatInterface = () => {
               <SuggestedActions onActionClick={(action) => processUserMessage(action)} />
             </div>
           ) : (
-            <div className="w-full max-w-4xl space-y-4 py-4">
+            <div className="w-full max-w-5xl space-y-4 py-4">
               {messages.map((msg) => (
                 <ChatMessage
                   key={msg.id}
@@ -86,7 +86,7 @@ const ChatInterface = () => {
 
       {/* Fixed Input Area */}
       <div className="border-t bg-white p-4 flex justify-center">
-        <div className="w-full max-w-4xl">
+        <div className="w-full max-w-5xl">
           <ChatInput 
             message={message}
             setMessage={setMessage}
