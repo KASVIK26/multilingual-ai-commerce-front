@@ -26,7 +26,7 @@ const Sidebar = () => {
       <div className="w-64 h-64 absolute left-[80px] bottom-[-40px] opacity-75 bg-gradient-to-b from-green-500 to-amber-300 rounded-full blur-[120px]" />
       
       {/* Scrollable content wrapper with hidden scrollbars */}
-      <div className="flex-1 flex flex-col relative z-10 overflow-y-auto overflow-x-hidden scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="flex-1 flex flex-col relative z-10 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="flex flex-col gap-4 p-4 min-h-full w-full">
           <div className="flex-shrink-0 w-full">
             <SidebarHeader />
