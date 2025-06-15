@@ -72,12 +72,24 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-80 h-[984px] bg-stone-300/20 rounded-2xl outline outline-1 outline-offset-[-1px] outline-gray-200 overflow-hidden relative">
+    <div className="w-80 h-screen bg-stone-300/20 rounded-2xl outline outline-1 outline-offset-[-1px] outline-gray-200 overflow-hidden relative">
+      <style>
+        {`
+          .sidebar-scroll::-webkit-scrollbar {
+            display: none;
+          }
+          .sidebar-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+        `}
+      </style>
+
       {/* Background gradients */}
       <div className="w-80 h-80 absolute left-[-191px] top-[-57px] opacity-75 bg-gradient-to-b from-violet-700 to-sky-400 rounded-full blur-[184.05px]" />
       <div className="w-80 h-80 absolute left-[132px] top-[867px] opacity-75 bg-gradient-to-b from-green-500 to-amber-300 rounded-full blur-[184.05px]" />
       
-      <div className="w-72 absolute left-[21px] top-[20px] inline-flex flex-col justify-start items-center gap-9 relative z-10">
+      <div className="w-72 absolute left-[21px] top-[20px] h-[calc(100vh-40px)] overflow-y-auto sidebar-scroll inline-flex flex-col justify-start items-center gap-9 relative z-10">
         <div className="self-stretch text-center justify-center text-violet-700 text-3xl font-bold font-['Poppins']"
           style={{
             background: 'linear-gradient(91deg, #3B00FE -4.68%, #991DCB 47.93%, #004998 99.54%)',
