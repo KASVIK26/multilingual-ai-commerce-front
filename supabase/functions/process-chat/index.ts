@@ -234,29 +234,49 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
       }
     }
 
-    // Enhanced price extraction - handle various formats
+    // Enhanced price extraction - FIXED to handle "under X" correctly
     const pricePatterns = [
-      /(\d+)\s*(?:to|-)?\s*(\d+)?\s*(?:rupees?|rs?|₹)/i,
+      // Pattern for "under X" - should set max price only
       /under\s+(\d+)/i,
       /below\s+(\d+)/i,
       /less\s+than\s+(\d+)/i,
-      /within\s+(\d+)/i
+      /within\s+(\d+)/i,
+      // Pattern for ranges like "X to Y" or "X - Y"
+      /(\d+)\s*(?:to|-)?\s*(\d+)\s*(?:rupees?|rs?|₹)/i,
+      // Pattern for "above X" or "more than X"
+      /above\s+(\d+)/i,
+      /more\s+than\s+(\d+)/i,
+      /over\s+(\d+)/i
     ]
     
     for (const pattern of pricePatterns) {
       const match = lowerMessage.match(pattern)
       if (match) {
         if (pattern.source.includes('under|below|less|within')) {
-          // Single price limit (max)
+          // "under X" means max price is X
           entities.price_range = {
             max: parseInt(match[1])
           }
-        } else {
-          // Range or single price
+          console.log(`Detected "under" pattern: max price = ${match[1]}`)
+        } else if (pattern.source.includes('above|more|over')) {
+          // "above X" means min price is X
+          entities.price_range = {
+            min: parseInt(match[1])
+          }
+          console.log(`Detected "above" pattern: min price = ${match[1]}`)
+        } else if (match[2]) {
+          // Range pattern "X to Y"
           entities.price_range = {
             min: parseInt(match[1]),
-            max: match[2] ? parseInt(match[2]) : undefined
+            max: parseInt(match[2])
           }
+          console.log(`Detected range pattern: ${match[1]} to ${match[2]}`)
+        } else {
+          // Single number - treat as max price if no other context
+          entities.price_range = {
+            max: parseInt(match[1])
+          }
+          console.log(`Detected single price: max = ${match[1]}`)
         }
         break
       }
