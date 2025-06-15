@@ -23,23 +23,27 @@ const categoryData = [
 
 const Dashboard = () => {
   return (
-    <div className="h-screen w-screen flex bg-stone-50 overflow-hidden">
+    <div className="h-screen w-full flex bg-stone-50 overflow-hidden">
+      <style>
+        {`
+          .dashboard-scroll::-webkit-scrollbar {
+            display: none;
+          }
+          .dashboard-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+        `}
+      </style>
+      
       <Sidebar />
       
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="p-5 border-b">
+        <div className="p-5 border-b flex-shrink-0">
           <Header />
         </div>
         
-        <div className="flex-1 overflow-y-auto p-5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <style>
-            {`
-              .overflow-y-auto::-webkit-scrollbar {
-                display: none;
-              }
-            `}
-          </style>
-          
+        <div className="flex-1 overflow-y-auto dashboard-scroll p-5">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Stats Cards */}
             <Card>
@@ -110,7 +114,7 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card>
               <CardHeader>
                 <CardTitle>Category Distribution</CardTitle>
