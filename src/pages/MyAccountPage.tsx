@@ -6,11 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Camera, Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/dashboard/Sidebar';
 
 const MyAccountPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState({
     name: 'Vikas',
     email: 'kasvik333@gmail.com',
@@ -24,10 +27,33 @@ const MyAccountPage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    setProfileData(formData);
-    setIsEditing(false);
-    console.log('Profile updated:', formData);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Simulate an API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update the profile data
+      setProfileData(formData);
+      setIsEditing(false);
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+      });
+      
+      console.log('Profile updated:', formData);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -80,11 +106,20 @@ const MyAccountPage = () => {
                     </Button>
                   ) : (
                     <div className="flex gap-2">
-                      <Button onClick={handleSave} size="sm">
+                      <Button 
+                        onClick={handleSave} 
+                        size="sm" 
+                        disabled={isSaving}
+                      >
                         <Save size={16} className="mr-2" />
-                        Save
+                        {isSaving ? 'Saving...' : 'Save'}
                       </Button>
-                      <Button onClick={handleCancel} variant="outline" size="sm">
+                      <Button 
+                        onClick={handleCancel} 
+                        variant="outline" 
+                        size="sm"
+                        disabled={isSaving}
+                      >
                         Cancel
                       </Button>
                     </div>
