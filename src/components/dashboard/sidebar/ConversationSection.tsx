@@ -24,16 +24,14 @@ const ConversationSection = ({}: ConversationSectionProps) => {
   };
 
   return (
-    <div 
-      className="flex flex-col gap-4 h-full overflow-y-auto overflow-x-hidden w-full scrollbar-none"
-      style={{
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
-      }}
-    >
-      <style jsx>{`
-        div::-webkit-scrollbar {
+    <div className="flex flex-col gap-4 h-full overflow-y-auto overflow-x-hidden w-full scrollbar-none">
+      <style>{`
+        .scrollbar-none::-webkit-scrollbar {
           display: none;
+        }
+        .scrollbar-none {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
       
@@ -53,7 +51,7 @@ const ConversationSection = ({}: ConversationSectionProps) => {
         </div>
         
         <div className="w-full px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
-          <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none">
             <div className="h-8 px-2 py-1 bg-gray-200 rounded-lg flex items-center gap-2 group relative w-full">
               <div className="flex justify-between items-center w-full min-w-0">
                 <div className="text-black text-sm font-normal font-['Poppins'] truncate flex-1">
@@ -92,7 +90,7 @@ const ConversationSection = ({}: ConversationSectionProps) => {
           </div>
         </div>
         <div className="w-full px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
-          <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none">
             {lastWeekItems.map((item) => (
               <button
                 key={item}
@@ -117,7 +115,7 @@ const ConversationSection = ({}: ConversationSectionProps) => {
           </div>
         </div>
         <div className="w-full px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
-          <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none">
             {lastMonthItems.map((item) => (
               <button
                 key={item}
