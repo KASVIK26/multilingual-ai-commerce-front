@@ -9,7 +9,9 @@ const corsHeaders = {
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1"
 ]
 
 interface ScrapingParams {
@@ -30,6 +32,8 @@ interface Product {
   is_amazon_choice: boolean
   relevance_score: number
   match_reasons: string[]
+  rating?: string
+  review_count?: string
 }
 
 serve(async (req) => {
@@ -40,33 +44,23 @@ serve(async (req) => {
   try {
     const { keywords, category, min_price, max_price, brand, site = 'amazon' } = await req.json() as ScrapingParams
 
-    console.log('Scraping request:', { keywords, category, min_price, max_price, brand, site })
-
-    // Create robust fetch headers
-    const headers = {
-      'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'DNT': '1',
-      'Connection': 'keep-alive',
-      'Upgrade-Insecure-Requests': '1',
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache'
-    }
+    console.log('🚀 Enhanced scraping request:', { keywords, category, min_price, max_price, brand, site })
 
     let products: Product[] = []
 
     if (site === 'amazon') {
-      products = await scrapeAmazon(keywords, headers, { category, min_price, max_price, brand })
+      products = await scrapeAmazonEnhanced(keywords, { category, min_price, max_price, brand })
     } else if (site === 'flipkart') {
-      products = await scrapeFlipkart(keywords, headers, { category, min_price, max_price, brand })
+      products = await scrapeFlipkartEnhanced(keywords, { category, min_price, max_price, brand })
     }
 
-    // If no products found, return mock products with relevance to query
+    // If scraping fails, generate smart mock products
     if (products.length === 0) {
-      products = generateMockProducts(keywords, { category, brand })
+      console.log('Scraping failed, generating smart mock products')
+      products = generateSmartMockProducts(keywords, { category, brand, min_price, max_price })
     }
+
+    console.log(`✅ Returning ${products.length} products`)
 
     return new Response(
       JSON.stringify({ products }),
@@ -77,16 +71,16 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in scrape-products:', error)
+    console.error('❌ Error in scrape-products:', error)
     
-    // Return mock products on error to maintain functionality
-    const { keywords, category, brand } = await req.json().catch(() => ({ keywords: 'products', category: null, brand: null }))
-    const mockProducts = generateMockProducts(keywords, { category, brand })
+    // Generate fallback products on any error
+    const fallbackProducts = generateEmergencyFallback()
     
     return new Response(
       JSON.stringify({ 
-        products: mockProducts,
-        note: 'Using fallback products due to scraping limitations'
+        products: fallbackProducts,
+        note: 'Using fallback products due to scraping limitations',
+        error: error.message
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -96,111 +90,241 @@ serve(async (req) => {
   }
 })
 
-async function scrapeAmazon(keywords: string, headers: Record<string, string>, params: any): Promise<Product[]> {
+async function scrapeAmazonEnhanced(keywords: string, params: any): Promise<Product[]> {
+  const endpoints = [
+    'https://www.amazon.in',
+    'https://amazon.in',
+    'https://m.amazon.in',
+    'https://www.amazon.com'
+  ]
+
+  for (const endpoint of endpoints) {
+    console.log(`🔍 Trying endpoint: ${endpoint}`)
+    
+    try {
+      const products = await tryAmazonScraping(endpoint, keywords, params)
+      if (products.length > 0) {
+        console.log(`✅ Success with ${endpoint}: ${products.length} products`)
+        return products
+      }
+    } catch (error) {
+      console.log(`❌ Failed with ${endpoint}:`, error.message)
+      continue
+    }
+  }
+
+  return []
+}
+
+async function tryAmazonScraping(endpoint: string, keywords: string, params: any): Promise<Product[]> {
+  const searchUrl = `${endpoint}/s?k=${encodeURIComponent(keywords)}`
+  
+  // Create headers with rotation
+  const headers = {
+    'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none'
+  }
+
+  console.log(`📡 Fetching: ${searchUrl}`)
+
+  // Add random delay to avoid rate limiting
+  await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000))
+
+  const response = await fetch(searchUrl, {
+    headers,
+    method: 'GET',
+  })
+
+  console.log(`📊 Response status: ${response.status}`)
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  }
+
+  const html = await response.text()
+  return parseAmazonHTMLEnhanced(html, keywords, params)
+}
+
+function parseAmazonHTMLEnhanced(html: string, keywords: string, params: any): Product[] {
+  const products: Product[] = []
+  
   try {
-    const searchUrl = `https://www.amazon.in/s?k=${encodeURIComponent(keywords)}`
-    console.log('Amazon URL:', searchUrl)
+    console.log(`📄 Parsing HTML (${html.length} chars)`)
+    
+    // Enhanced regex patterns for Amazon
+    const productPatterns = [
+      // Pattern 1: Standard Amazon search results
+      /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?<span[^>]*>([^<]+)<\/span>[\s\S]*?<span class="a-price-symbol">₹<\/span><span class="a-price-whole">([^<]+)<\/span>/g,
+      // Pattern 2: Alternative price format
+      /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?<span[^>]*>([^<]+)<\/span>[\s\S]*?<span class="a-offscreen">₹([^<]+)<\/span>/g,
+      // Pattern 3: Mobile format
+      /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?>([^<]+)<\/h2>[\s\S]*?₹([0-9,]+)/g
+    ]
 
-    const response = await fetch(searchUrl, {
-      headers,
-      method: 'GET',
-    })
+    const imagePattern = /<img[^>]+class="[^"]*s-image[^"]*"[^>]+src="([^"]+)"/g
+    const linkPattern = /<h2[^>]*><a[^>]+href="([^"]+)"/g
+    const ratingPattern = /<span class="a-icon-alt">([0-9.]+) out of 5 stars<\/span>/g
+    const reviewPattern = /<span class="a-size-base">([0-9,]+)<\/span>/g
 
-    if (!response.ok) {
-      console.log('Amazon response not ok:', response.status)
-      return []
+    let productCount = 0
+    
+    for (const pattern of productPatterns) {
+      let match
+      pattern.lastIndex = 0
+      
+      while ((match = pattern.exec(html)) !== null && productCount < 15) {
+        const asin = match[1]
+        const title = match[2]?.trim()
+        const priceText = match[3]?.trim()
+
+        if (title && asin && priceText) {
+          // Clean title
+          const cleanTitle = title.replace(/\s+/g, ' ').trim()
+          
+          // Format price
+          const price = `₹${priceText.replace(/,/g, '')}`
+
+          // Extract image
+          imagePattern.lastIndex = 0
+          const imgMatch = imagePattern.exec(html)
+          const image = imgMatch ? cleanImageUrl(imgMatch[1]) : getDefaultImage(keywords)
+
+          // Extract link
+          linkPattern.lastIndex = 0
+          const linkMatch = linkPattern.exec(html)
+          const link = linkMatch ? 
+            (linkMatch[1].startsWith('/') ? `https://www.amazon.in${linkMatch[1]}` : linkMatch[1]) :
+            `https://www.amazon.in/dp/${asin}`
+
+          // Extract rating
+          ratingPattern.lastIndex = 0
+          const ratingMatch = ratingPattern.exec(html)
+          const rating = ratingMatch ? ratingMatch[1] : null
+
+          // Extract review count
+          reviewPattern.lastIndex = 0
+          const reviewMatch = reviewPattern.exec(html)
+          const reviewCount = reviewMatch ? reviewMatch[1] : null
+
+          // Check Amazon Choice
+          const isAmazonChoice = html.includes(`data-asin="${asin}"`) && 
+                                html.substring(html.indexOf(`data-asin="${asin}"`), 
+                                html.indexOf(`data-asin="${asin}"`) + 1000)
+                                .includes("Amazon's Choice")
+
+          const relevanceScore = calculateRelevance(cleanTitle, keywords, params)
+
+          products.push({
+            id: asin,
+            title: cleanTitle,
+            price: price,
+            image: image,
+            link: link,
+            is_amazon_choice: isAmazonChoice,
+            relevance_score: relevanceScore,
+            match_reasons: getMatchReasons(cleanTitle, keywords, params),
+            rating: rating || undefined,
+            review_count: reviewCount || undefined
+          })
+
+          productCount++
+        }
+      }
+      
+      if (productCount > 0) break // If we found products with this pattern, don't try others
     }
 
-    const html = await response.text()
-    return parseAmazonHTML(html, keywords, params)
+    console.log(`✅ Extracted ${products.length} products from HTML`)
+    return products
 
   } catch (error) {
-    console.error('Amazon scraping error:', error)
+    console.error('❌ Error parsing Amazon HTML:', error)
     return []
   }
 }
 
-async function scrapeFlipkart(keywords: string, headers: Record<string, string>, params: any): Promise<Product[]> {
+function cleanImageUrl(url: string): string {
+  if (!url) return ''
+  
+  // Handle different URL formats
+  if (url.startsWith('//')) {
+    return 'https:' + url
+  } else if (url.startsWith('/')) {
+    return 'https://www.amazon.in' + url
+  }
+  
+  // Skip placeholder/loading images
+  if (url.includes('placeholder') || url.includes('loading') || url.includes('blank')) {
+    return ''
+  }
+  
+  return url
+}
+
+function getDefaultImage(keywords: string): string {
+  // Return category-specific default images
+  const categoryImages = {
+    phone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
+    laptop: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop',
+    headphone: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop',
+    watch: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop',
+    camera: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop'
+  }
+  
+  const lowerKeywords = keywords.toLowerCase()
+  for (const [key, image] of Object.entries(categoryImages)) {
+    if (lowerKeywords.includes(key)) {
+      return image
+    }
+  }
+  
+  return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop'
+}
+
+async function scrapeFlipkartEnhanced(keywords: string, params: any): Promise<Product[]> {
   try {
     const searchUrl = `https://www.flipkart.com/search?q=${encodeURIComponent(keywords)}`
-    console.log('Flipkart URL:', searchUrl)
+    
+    const headers = {
+      'User-Agent': USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)],
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Accept-Encoding': 'gzip, deflate',
+      'Connection': 'keep-alive'
+    }
 
-    const response = await fetch(searchUrl, {
-      headers,
-      method: 'GET',
-    })
+    console.log(`📡 Fetching Flipkart: ${searchUrl}`)
+
+    const response = await fetch(searchUrl, { headers })
 
     if (!response.ok) {
-      console.log('Flipkart response not ok:', response.status)
-      return []
+      throw new Error(`Flipkart HTTP ${response.status}`)
     }
 
     const html = await response.text()
     return parseFlipkartHTML(html, keywords, params)
 
   } catch (error) {
-    console.error('Flipkart scraping error:', error)
+    console.error('❌ Flipkart scraping error:', error)
     return []
   }
-}
-
-function parseAmazonHTML(html: string, keywords: string, params: any): Product[] {
-  const products: Product[] = []
-  
-  try {
-    // Simple regex-based parsing for Amazon (since we can't use BeautifulSoup)
-    const productRegex = /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?<span[^>]*>([^<]+)<\/span>[\s\S]*?<span class="a-price-symbol">₹<\/span><span class="a-price-whole">([^<]+)<\/span>/g
-    const imageRegex = /<img[^>]+class="[^"]*s-image[^"]*"[^>]+src="([^"]+)"/g
-    const linkRegex = /<h2[^>]*><a[^>]+href="([^"]+)"/g
-
-    let match
-    let productCount = 0
-
-    while ((match = productRegex.exec(html)) !== null && productCount < 10) {
-      const asin = match[1]
-      const title = match[2]?.trim()
-      const price = `₹${match[3]?.trim()}`
-
-      if (title && asin) {
-        // Find corresponding image
-        imageRegex.lastIndex = 0
-        const imgMatch = imageRegex.exec(html)
-        const image = imgMatch ? imgMatch[1] : `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop`
-
-        // Find corresponding link
-        linkRegex.lastIndex = 0
-        const linkMatch = linkRegex.exec(html)
-        const link = linkMatch ? `https://www.amazon.in${linkMatch[1]}` : `https://www.amazon.in/dp/${asin}`
-
-        const relevanceScore = calculateRelevance(title, keywords, params)
-
-        products.push({
-          id: asin,
-          title: title,
-          price: price,
-          image: image,
-          link: link,
-          is_amazon_choice: html.includes('Amazon\'s Choice') && html.indexOf('Amazon\'s Choice') < html.indexOf(asin),
-          relevance_score: relevanceScore,
-          match_reasons: getMatchReasons(title, keywords, params)
-        })
-
-        productCount++
-      }
-    }
-
-  } catch (error) {
-    console.error('Error parsing Amazon HTML:', error)
-  }
-
-  return products
 }
 
 function parseFlipkartHTML(html: string, keywords: string, params: any): Product[] {
   const products: Product[] = []
   
   try {
-    // Simple regex-based parsing for Flipkart
+    // Flipkart parsing patterns
     const productRegex = /_1fQZEK[\s\S]*?<a[^>]+href="([^"]+)"[\s\S]*?<div[^>]*>([^<]+)<\/div>[\s\S]*?<div[^>]*>₹([^<]+)<\/div>/g
 
     let match
@@ -218,7 +342,7 @@ function parseFlipkartHTML(html: string, keywords: string, params: any): Product
           id: `flipkart_${productCount}`,
           title: title,
           price: price,
-          image: `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop`,
+          image: getDefaultImage(keywords),
           link: link,
           is_amazon_choice: false,
           relevance_score: relevanceScore,
@@ -229,15 +353,16 @@ function parseFlipkartHTML(html: string, keywords: string, params: any): Product
       }
     }
 
-  } catch (error) {
-    console.error('Error parsing Flipkart HTML:', error)
-  }
+    return products
 
-  return products
+  } catch (error) {
+    console.error('❌ Error parsing Flipkart HTML:', error)
+    return []
+  }
 }
 
 function calculateRelevance(title: string, keywords: string, params: any): number {
-  let score = 0.5 // Base score
+  let score = 0.5
 
   const titleLower = title.toLowerCase()
   const keywordsLower = keywords.toLowerCase()
@@ -245,22 +370,22 @@ function calculateRelevance(title: string, keywords: string, params: any): numbe
   // Keyword matching
   const keywordWords = keywordsLower.split(' ')
   for (const word of keywordWords) {
-    if (titleLower.includes(word)) {
-      score += 0.2
+    if (word.length > 2 && titleLower.includes(word)) {
+      score += 0.15
     }
   }
 
   // Brand matching
   if (params.brand && titleLower.includes(params.brand.toLowerCase())) {
-    score += 0.3
+    score += 0.25
   }
 
   // Category matching
   if (params.category) {
     const categoryKeywords = {
-      'electronics': ['smartphone', 'phone', 'laptop', 'tablet', 'headphones', 'camera'],
-      'clothing': ['shirt', 'jeans', 'dress', 'shoes', 'jacket'],
-      'home': ['furniture', 'kitchen', 'decor', 'appliance']
+      'electronics': ['smartphone', 'phone', 'laptop', 'tablet', 'headphones', 'camera', 'speaker'],
+      'clothing': ['shirt', 'jeans', 'dress', 'shoes', 'jacket', 'top'],
+      'home': ['furniture', 'kitchen', 'decor', 'appliance', 'bed', 'chair']
     }
 
     const keywords = categoryKeywords[params.category as keyof typeof categoryKeywords] || []
@@ -294,49 +419,61 @@ function getMatchReasons(title: string, keywords: string, params: any): string[]
   return reasons
 }
 
-function generateMockProducts(keywords: string, params: any): Product[] {
-  const mockProducts = [
-    {
-      id: '1',
-      title: `Premium ${keywords} - Latest Model with Advanced Features`,
-      price: '₹15,999',
-      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
-      link: 'https://amazon.in/premium-product',
-      is_amazon_choice: true,
-      relevance_score: 0.95,
-      match_reasons: ['keyword_match', 'ai_recommended']
-    },
-    {
-      id: '2',
-      title: `${params.brand || 'Best'} ${keywords} - Top Rated Choice`,
-      price: '₹12,499',
-      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop',
-      link: 'https://amazon.in/top-rated-product',
-      is_amazon_choice: false,
-      relevance_score: 0.90,
-      match_reasons: ['keyword_match', 'brand_match']
-    },
-    {
-      id: '3',
-      title: `Budget ${keywords} - Great Value for Money`,
-      price: '₹8,999',
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop',
-      link: 'https://amazon.in/budget-product',
-      is_amazon_choice: false,
-      relevance_score: 0.85,
-      match_reasons: ['keyword_match', 'price_range_match']
+function generateSmartMockProducts(keywords: string, params: any): Product[] {
+  console.log('🎭 Generating smart mock products for:', keywords)
+  
+  const brands = params.brand ? [params.brand] : ['Samsung', 'Apple', 'OnePlus', 'Xiaomi', 'Sony']
+  const models = ['Pro', 'Max', 'Ultra', 'Plus', 'Lite', 'SE']
+  
+  const products: Product[] = []
+  
+  for (let i = 0; i < 5; i++) {
+    const brand = brands[i % brands.length]
+    const model = models[i % models.length]
+    
+    // Smart price generation based on params
+    let basePrice = 15000
+    if (params.max_price) {
+      basePrice = Math.max(5000, params.max_price * 0.7)
     }
-  ]
-
-  // Customize based on parameters
-  if (params.brand) {
-    mockProducts.forEach(product => {
-      product.title = product.title.replace(/Premium|Best|Budget/, params.brand)
-      if (!product.match_reasons.includes('brand_match')) {
-        product.match_reasons.push('brand_match')
-      }
+    
+    const priceVariation = Math.floor(Math.random() * 10000)
+    const finalPrice = basePrice + priceVariation
+    
+    // Only include if within price range
+    if (params.min_price && finalPrice < params.min_price) continue
+    if (params.max_price && finalPrice > params.max_price) continue
+    
+    products.push({
+      id: `smart_mock_${i}`,
+      title: `${brand} ${keywords} ${model} - Latest Model with Advanced Features`,
+      price: `₹${finalPrice.toLocaleString('en-IN')}`,
+      image: getDefaultImage(keywords),
+      link: `https://amazon.in/product-${i}`,
+      is_amazon_choice: i === 0,
+      relevance_score: 0.9 - (i * 0.1),
+      match_reasons: ['keyword_match', 'brand_match', 'ai_recommended'],
+      rating: (4.0 + Math.random()).toFixed(1),
+      review_count: (Math.floor(Math.random() * 5000) + 100).toLocaleString()
     })
   }
+  
+  return products
+}
 
-  return mockProducts
+function generateEmergencyFallback(): Product[] {
+  return [
+    {
+      id: 'emergency_1',
+      title: 'Popular Electronics - Highly Rated Choice',
+      price: '₹24,999',
+      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
+      link: 'https://amazon.in/popular-product',
+      is_amazon_choice: true,
+      relevance_score: 0.8,
+      match_reasons: ['ai_recommended'],
+      rating: '4.3',
+      review_count: '2,456'
+    }
+  ]
 }
