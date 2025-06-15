@@ -37,25 +37,43 @@ export const useChat = () => {
     setMessages(prev => [...prev, userChatMessage]);
 
     try {
-      // Call Supabase Edge Function for NLP processing and product scraping
-      const { data, error } = await supabase.functions.invoke('process-chat', {
-        body: { 
-          message: userMessage,
-          user_id: (await supabase.auth.getUser()).data.user?.id 
-        }
-      });
+      // Search for products in the database directly
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .or(`name.ilike.%${userMessage}%,description.ilike.%${userMessage}%,brand.ilike.%${userMessage}%`)
+        .eq('is_active', true)
+        .limit(10);
 
       if (error) {
         throw error;
       }
 
+      // Transform products to match the expected format
+      const transformedProducts = products?.map(product => ({
+        id: product.id,
+        title: product.name,
+        price: `$${product.price}`,
+        image: product.image_url || '',
+        link: product.product_url || '',
+        is_amazon_choice: false // You can add this field to your database if needed
+      })) || [];
+
+      // Generate AI response based on found products
+      let responseContent = "";
+      if (transformedProducts.length > 0) {
+        responseContent = `I found ${transformedProducts.length} products matching "${userMessage}". Here are the best options:`;
+      } else {
+        responseContent = `I couldn't find any products matching "${userMessage}" in our current database. Our scraper may need to be run to fetch fresh products for this search term.`;
+      }
+
       // Add AI response with products
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "I found some products for you:",
+        content: responseContent,
         sender: 'ai',
         timestamp: new Date(),
-        products: data.products || []
+        products: transformedProducts
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -66,7 +84,7 @@ export const useChat = () => {
       // Add error message
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: "Sorry, I encountered an error processing your request. Please try again.",
+        content: "Sorry, I encountered an error while searching for products. Please try again.",
         sender: 'ai',
         timestamp: new Date()
       };
