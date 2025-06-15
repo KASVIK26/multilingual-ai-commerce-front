@@ -75,11 +75,10 @@ const ChatInput = ({
 
     setIsListening(true);
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
-      setMessage((prev) =>
-        prev ? prev + "\n" + transcript : transcript
-      );
+      // Append transcript to the current message (multiline safe)
+      setMessage(message ? message + "\n" + transcript : transcript);
       setIsListening(false);
       // Focus the textarea after speech
       setTimeout(() => {
@@ -191,3 +190,4 @@ const ChatInput = ({
 };
 
 export default ChatInput;
+
