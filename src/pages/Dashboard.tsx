@@ -1,4 +1,3 @@
-
 import { Search, Bell, Home, MessageSquare, MoreHorizontal } from "lucide-react";
 import Sidebar from '@/components/dashboard/Sidebar';
 import Header from '@/components/dashboard/Header';
@@ -30,10 +29,10 @@ const Dashboard = () => {
         <Header />
       </div>
 
-      {/* Stats Cards Container - increased width to better fill the window */}
-      <div className="w-[984px] left-[436px] top-[124px] absolute inline-flex justify-between items-center">
+      {/* Stats Cards Container - adjusted width to fit better */}
+      <div className="w-[920px] left-[436px] top-[124px] absolute inline-flex justify-between items-center">
         {/* Voice Orders Card */}
-        <div className="w-60 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
+        <div className="w-56 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
           <div className="self-stretch inline-flex justify-start items-start gap-24">
             <div className="w-28 inline-flex flex-col justify-center items-start gap-2.5">
               <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins'] transition-colors">Voice Orders</div>
@@ -72,13 +71,13 @@ const Dashboard = () => {
         </div>
 
         {/* Orders in Progress Card */}
-        <div className="w-60 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
+        <div className="w-56 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
           <div className="self-stretch inline-flex justify-start items-start gap-24">
             <div className="w-28 inline-flex flex-col justify-center items-start gap-2.5">
-              <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins'] transition-colors">
+              <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins']">
                 Orders in Progress
               </div>
-              <div className="justify-center text-black group-hover:text-stone-50 text-4xl font-medium font-['Poppins'] transition-colors">
+              <div className="justify-center text-black group-hover:text-stone-50 text-4xl font-medium font-['Poppins']">
                 21
               </div>
               <div className="self-stretch inline-flex justify-start items-center gap-[5px]">
@@ -115,13 +114,13 @@ const Dashboard = () => {
         </div>
 
         {/* Pending Requests Card */}
-        <div className="w-60 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
+        <div className="w-56 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
           <div className="self-stretch inline-flex justify-start items-start gap-24">
             <div className="w-28 inline-flex flex-col justify-center items-start gap-2.5">
-              <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins'] transition-colors">
+              <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins']">
                 Pending Requests
               </div>
-              <div className="justify-center text-black group-hover:text-stone-50 text-4xl font-medium font-['Poppins'] transition-colors">
+              <div className="justify-center text-black group-hover:text-stone-50 text-4xl font-medium font-['Poppins']">
                 17
               </div>
               <div className="self-stretch inline-flex justify-start items-center gap-[5px]">
@@ -158,13 +157,13 @@ const Dashboard = () => {
         </div>
 
         {/* Products Reordered Card */}
-        <div className="w-60 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
+        <div className="w-56 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
           <div className="self-stretch inline-flex justify-start items-start gap-24">
             <div className="w-28 inline-flex flex-col justify-center items-start gap-2.5">
-              <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins'] transition-colors">
+              <div className="justify-center text-zinc-600 group-hover:text-zinc-300 text-xs font-medium font-['Poppins']">
                 Products Reordered
               </div>
-              <div className="justify-center text-black group-hover:text-stone-50 text-4xl font-medium font-['Poppins'] transition-colors">
+              <div className="justify-center text-black group-hover:text-stone-50 text-4xl font-medium font-['Poppins']">
                 12
               </div>
               <div className="self-stretch inline-flex justify-start items-center gap-[5px]">
@@ -201,24 +200,24 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Charts Section - adjusted left position */}
-      <div className="left-[436px] top-[294px] absolute inline-flex justify-start items-center gap-7">
-        {/* Revenue Chart */}
-        <div className="w-[507px] h-64 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
+      {/* Charts Section - adjusted width and spacing */}
+      <div className="left-[436px] top-[294px] absolute inline-flex justify-start items-center gap-6">
+        {/* Revenue Chart - reduced width */}
+        <div className="w-[450px] h-64 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
           {/* Bottom Line */}
-          <div className="w-[487px] h-0 left-[10px] top-[214px] absolute outline outline-[0.80px] outline-offset-[-0.40px] outline-zinc-400"></div>
+          <div className="w-[430px] h-0 left-[10px] top-[214px] absolute outline outline-[0.80px] outline-offset-[-0.40px] outline-zinc-400"></div>
           
           {/* Days of Week */}
-          <div className="w-[462px] left-[22px] top-[218px] absolute inline-flex justify-between items-center">
+          <div className="w-[412px] left-[22px] top-[218px] absolute inline-flex justify-between items-center">
             {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
               <div key={day} className="text-right justify-center text-neutral-600 text-xs font-normal font-['Poppins']">{day}</div>
             ))}
           </div>
           
           {/* Chart Area */}
-          <div className="w-[486px] h-28 left-[11px] top-[107px] absolute">
-            <div className="w-[486px] h-20 left-0 top-0 absolute outline outline-2 outline-offset-[-1px] outline-blue-700" />
-            <div className="w-[486px] h-28 left-0 top-0 absolute bg-gradient-to-b from-blue-700/50 to-white/0" />
+          <div className="w-[426px] h-28 left-[11px] top-[107px] absolute">
+            <div className="w-[426px] h-20 left-0 top-0 absolute outline outline-2 outline-offset-[-1px] outline-blue-700" />
+            <div className="w-[426px] h-28 left-0 top-0 absolute bg-gradient-to-b from-blue-700/50 to-white/0" />
             {/* Vertical Grid Lines and Stats */}
             {[
               { left: 27, value: '₹2.1L' },
@@ -248,7 +247,7 @@ const Dashboard = () => {
           </div>
           
           {/* Header Section with Stats */}
-          <div className="w-[487px] h-14 left-[10px] top-[12px] absolute inline-flex flex-col justify-between items-center">
+          <div className="w-[427px] h-14 left-[10px] top-[12px] absolute inline-flex flex-col justify-between items-center">
             {/* Title and Menu */}
             <div className="self-stretch inline-flex justify-between items-center">
               <div className="w-56 justify-center text-zinc-600 text-base font-normal font-['Poppins']">Total Revenue</div>
@@ -283,8 +282,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Spending Chart */}
-        <div className="w-[507px] h-64 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
+        {/* Spending Chart - reduced width */}
+        <div className="w-[450px] h-64 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
           {/* Donut Chart */}
           <div className="w-48 h-48 left-[303px] top-[39px] absolute">
             <svg className="w-48 h-48 absolute" viewBox="0 0 192 192">
@@ -376,7 +375,7 @@ const Dashboard = () => {
           </div>
 
           {/* Header */}
-          <div className="w-[487px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
+          <div className="w-[427px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
             <div className="justify-center text-zinc-600 text-base font-normal font-['Poppins']">Where You Spend the Most</div>
             <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
               <img 
@@ -389,12 +388,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Bottom Section - adjusted left position */}
-      <div className="left-[436px] top-[600px] absolute inline-flex justify-start items-center gap-7">
-        {/* Product Overview Table */}
-        <div className="w-[672px] h-80 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
+      {/* Bottom Section - adjusted width */}
+      <div className="left-[436px] top-[600px] absolute inline-flex justify-start items-center gap-6">
+        {/* Product Overview Table - reduced width */}
+        <div className="w-[590px] h-80 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
           {/* Header */}
-          <div className="w-[652px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
+          <div className="w-[570px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
             <div className="w-56 text-[#5C5C5C] text-base font-normal font-['Poppins']">Product Overview</div>
             <div className="flex justify-start items-center gap-2.5">
               <div className="text-[#5C5C5C] text-base font-normal font-['Poppins']">Day</div>
@@ -404,7 +403,7 @@ const Dashboard = () => {
           </div>
 
           {/* Table Content */}
-          <div className="w-[652px] left-[10px] top-[69px] absolute inline-flex flex-col justify-start items-start gap-2">
+          <div className="w-[570px] left-[10px] top-[69px] absolute inline-flex flex-col justify-start items-start gap-2">
             {/* Table Header */}
             <div className="w-full inline-flex justify-between items-center px-2">
               <div className="w-36 text-[#000000] text-xs font-medium font-['Poppins']">Product</div>
@@ -416,7 +415,7 @@ const Dashboard = () => {
             </div>
 
             {/* Header Divider */}
-            <div className="w-[652px] h-0 border-t border-[#5C5C5C]"></div>
+            <div className="w-[570px] h-0 border-t border-[#5C5C5C]"></div>
 
             {/* Table Rows */}
             <div className="self-stretch flex flex-col justify-start items-start gap-2.5">
@@ -433,7 +432,7 @@ const Dashboard = () => {
               </div>
 
               {/* Divider */}
-              <div className="w-[652px] h-0 border-t border-[#E6E6E6]"></div>
+              <div className="w-[570px] h-0 border-t border-[#E6E6E6]"></div>
 
               {/* Row 2 */}
               <div className="w-full inline-flex justify-between items-center px-2 py-1">
@@ -448,7 +447,7 @@ const Dashboard = () => {
               </div>
 
               {/* Divider */}
-              <div className="w-[652px] h-0 border-t border-[#E6E6E6]"></div>
+              <div className="w-[570px] h-0 border-t border-[#E6E6E6]"></div>
 
               {/* Row 3 */}
               <div className="w-full inline-flex justify-between items-center px-2 py-1">
@@ -463,7 +462,7 @@ const Dashboard = () => {
               </div>
 
               {/* Divider */}
-              <div className="w-[652px] h-0 border-t border-[#E6E6E6]"></div>
+              <div className="w-[570px] h-0 border-t border-[#E6E6E6]"></div>
 
               {/* Row 4 */}
               <div className="w-full inline-flex justify-between items-center px-2 py-1">
@@ -480,9 +479,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Alerts */}
-        <div className="w-[342px] h-80 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
-          <div className="w-[322px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
+        {/* Quick Alerts - reduced width */}
+        <div className="w-[310px] h-80 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
+          <div className="w-[290px] left-[10px] top-[12px] absolute inline-flex justify-between items-center">
             <div className="flex justify-start items-center gap-[5px]">
               <div className="w-5 h-5 relative">
                 <img 
@@ -501,10 +500,10 @@ const Dashboard = () => {
               />
             </button>
           </div>
-          <div className="w-[322px] h-0 left-[10px] top-[47px] absolute border-t border-zinc-400"></div>
+          <div className="w-[290px] h-0 left-[10px] top-[47px] absolute border-t border-zinc-400"></div>
           
           {/* Alert Items */}
-          <div className="w-[322px] left-[10px] top-[66px] absolute flex flex-col justify-start items-start gap-4">
+          <div className="w-[290px] left-[10px] top-[66px] absolute flex flex-col justify-start items-start gap-4">
             
             {/* Alert 1 - Delivery */}
             <div className="w-full flex flex-col justify-start items-start gap-0">
