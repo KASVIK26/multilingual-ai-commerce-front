@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -31,6 +30,38 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Helper function to ensure user profile exists
+const ensureUserProfile = async (userId: string, email: string, fullName?: string) => {
+  try {
+    // Check if profile exists
+    const { data: existingProfile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (!existingProfile) {
+      // Create profile if it doesn't exist
+      const { error: insertError } = await supabase
+        .from('user_profiles')
+        .insert({
+          id: userId,
+          email: email,
+          first_name: fullName?.split(' ')[0] || '',
+          last_name: fullName?.split(' ').slice(1).join(' ') || '',
+        });
+
+      if (insertError) {
+        console.error('Error creating user profile:', insertError);
+      } else {
+        console.log('User profile created successfully');
+      }
+    }
+  } catch (error) {
+    console.error('Error in ensureUserProfile:', error);
+  }
+};
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,12 +77,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.error('Error getting user:', error);
           setUser(null);
         } else if (data?.user) {
-          setUser({
+          const userData = {
             id: data.user.id,
             email: data.user.email ?? '',
             fullName: data.user.user_metadata?.fullName || data.user.user_metadata?.full_name || '',
             emailConfirmed: data.user.email_confirmed_at ? true : false,
-          });
+          };
+          
+          setUser(userData);
+          
+          // Ensure user profile exists
+          await ensureUserProfile(
+            data.user.id, 
+            data.user.email ?? '', 
+            userData.fullName
+          );
         } else {
           setUser(null);
         }
@@ -69,12 +109,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.log('Auth state change:', event);
       
       if (session?.user) {
-        setUser({
+        const userData = {
           id: session.user.id,
           email: session.user.email ?? '',
           fullName: session.user.user_metadata?.fullName || session.user.user_metadata?.full_name || '',
           emailConfirmed: session.user.email_confirmed_at ? true : false,
-        });
+        };
+        
+        setUser(userData);
+        
+        // Ensure user profile exists on auth state change
+        setTimeout(() => {
+          ensureUserProfile(
+            session.user.id, 
+            session.user.email ?? '', 
+            userData.fullName
+          );
+        }, 0);
       } else {
         setUser(null);
       }
@@ -99,12 +150,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
       
       if (data.user) {
-        setUser({
+        const userData = {
           id: data.user.id,
           email: data.user.email ?? '',
           fullName: data.user.user_metadata?.fullName || data.user.user_metadata?.full_name || '',
           emailConfirmed: data.user.email_confirmed_at ? true : false,
-        });
+        };
+        
+        setUser(userData);
+        
+        // Ensure user profile exists after sign in
+        await ensureUserProfile(
+          data.user.id, 
+          data.user.email ?? '', 
+          userData.fullName
+        );
       }
     } catch (error) {
       console.error('Sign in error:', error);
