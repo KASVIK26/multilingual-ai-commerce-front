@@ -89,7 +89,7 @@ const ChatHeader = () => {
           </button>
           <button 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-11 h-11 rounded-full hover:scale-110 transition-transform cursor-pointer bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-md"
+            className="w-11 h-11 rounded-full hover:scale-110 transition-transform cursor-pointer bg-blue-500 flex items-center justify-center text-white"
           >
             <User size={20} />
           </button>
