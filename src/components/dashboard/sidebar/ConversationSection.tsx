@@ -24,9 +24,22 @@ const ConversationSection = ({}: ConversationSectionProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 h-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-between items-center">
+    <div 
+      className="flex flex-col gap-4 h-full overflow-y-auto overflow-x-hidden w-full"
+      style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
+      }}
+    >
+      <style>
+        {`
+          .conversation-scroll::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+      </style>
+      <div className="flex flex-col gap-3 conversation-scroll w-full">
+        <div className="flex justify-between items-center w-full">
           <div className="text-black text-sm font-normal font-['Poppins'] truncate">
             Conversations
           </div>
@@ -40,9 +53,9 @@ const ConversationSection = ({}: ConversationSectionProps) => {
           </button>
         </div>
         
-        <div className="px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
-          <div className="flex flex-col gap-1">
-            <div className="h-8 px-2 py-1 bg-gray-200 rounded-lg flex items-center gap-2 group relative">
+        <div className="w-full px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
+          <div className="flex flex-col gap-1 w-full">
+            <div className="h-8 px-2 py-1 bg-gray-200 rounded-lg flex items-center gap-2 group relative w-full">
               <div className="flex justify-between items-center w-full min-w-0">
                 <div className="text-black text-sm font-normal font-['Poppins'] truncate flex-1">
                   Shopping Chat Log
@@ -73,14 +86,14 @@ const ConversationSection = ({}: ConversationSectionProps) => {
       </div>
 
       {/* Last Week Section */}
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-start items-center">
+      <div className="flex flex-col gap-3 w-full">
+        <div className="flex justify-start items-center w-full">
           <div className="text-black text-sm font-normal font-['Poppins'] truncate">
             Last Week
           </div>
         </div>
-        <div className="px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
-          <div className="flex flex-col gap-1">
+        <div className="w-full px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
+          <div className="flex flex-col gap-1 w-full">
             {lastWeekItems.map((item) => (
               <button
                 key={item}
@@ -98,14 +111,14 @@ const ConversationSection = ({}: ConversationSectionProps) => {
       </div>
 
       {/* Last Month Section */}
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-start items-center">
+      <div className="flex flex-col gap-3 w-full">
+        <div className="flex justify-start items-center w-full">
           <div className="text-black text-sm font-normal font-['Poppins'] truncate">
             Last Month
           </div>
         </div>
-        <div className="px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
-          <div className="flex flex-col gap-1">
+        <div className="w-full px-2 py-2 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2 overflow-hidden">
+          <div className="flex flex-col gap-1 w-full">
             {lastMonthItems.map((item) => (
               <button
                 key={item}

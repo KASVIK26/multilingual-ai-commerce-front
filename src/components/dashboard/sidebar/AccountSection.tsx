@@ -11,10 +11,10 @@ const AccountSection = ({}: AccountSectionProps) => {
   };
 
   return (
-    <div className="self-stretch px-2 py-2 bg-slate-950 rounded-2xl outline outline-1 outline-offset-[-1px] inline-flex flex-col justify-start items-start gap-2 overflow-hidden">
+    <div className="w-full px-2 py-2 bg-slate-950 rounded-2xl outline outline-1 outline-offset-[-1px] inline-flex flex-col justify-start items-start gap-2 overflow-hidden">
       {/* My Account Button */}
       <div className="w-full h-8 px-2 py-1 bg-gradient-to-r from-violet-700 via-purple-700 to-sky-800 rounded-[10px] flex items-center gap-2 overflow-hidden hover:scale-105 transition-transform duration-200">
-        <div className="self-stretch inline-flex justify-between items-center w-full min-w-0">
+        <div className="w-full inline-flex justify-between items-center min-w-0">
           <div className="justify-center text-white text-sm font-normal font-['Poppins'] truncate flex-1">
             My Account
           </div>
@@ -30,7 +30,7 @@ const AccountSection = ({}: AccountSectionProps) => {
         className="w-full h-8 px-2 py-1 rounded-[10px] flex items-center gap-2 overflow-hidden cursor-pointer hover:bg-white/5 transition-all duration-200 hover:scale-105"
         onClick={handleLogout}
       >
-        <div className="self-stretch inline-flex justify-between items-center w-full min-w-0">
+        <div className="w-full inline-flex justify-between items-center min-w-0">
           <div className="justify-center text-stone-50 text-sm font-normal font-['Poppins'] truncate flex-1">
             Log Out
           </div>
