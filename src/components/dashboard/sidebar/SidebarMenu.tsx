@@ -52,13 +52,13 @@ const SidebarMenu = ({ activeItem, setActiveItem }: SidebarMenuProps) => {
         <button
           key={item.name}
           onClick={() => handleMenuClick(item)}
-          className={`self-stretch h-14 px-2.5 py-3.5 rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden transition-all duration-300 hover:scale-105 ${
+          className={`w-full h-14 px-4 py-3.5 rounded-[10px] flex flex-col justify-center items-center gap-2.5 overflow-hidden transition-all duration-300 hover:scale-105 ${
             activeItem === item.name
               ? 'bg-blue-700 text-stone-50'
               : 'bg-gradient-to-r from-slate-950 to-blue-900 text-stone-50 hover:bg-blue-600'
           }`}
         >
-          <div className="w-64 inline-flex justify-between items-center">
+          <div className="w-full inline-flex justify-between items-center px-2">
             <div className="justify-center text-sm font-normal font-['Poppins']">
               {item.name}
             </div>
