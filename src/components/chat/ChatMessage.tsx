@@ -30,7 +30,7 @@ const ChatMessage = ({ message, onAddToCart, onProductClick }: ChatMessageProps)
         <div className="w-full flex justify-start items-start gap-5">
           {message.sender === 'user' ? (
             <>
-              <img className="w-11 h-11 rounded-full" src="https://placehold.co/45x45" />
+              <img className="w-11 h-11 rounded-full" src="public\index_page\image.svg" />
               <div className="flex-1 p-5 bg-white rounded-2xl shadow-[0px_3px_10px_0px_rgba(0,0,0,0.10)] outline outline-[0.50px] outline-offset-[-0.50px] outline-gray-200 flex justify-start items-center gap-2.5">
                 <div className="text-black text-base font-normal font-['Poppins']">{message.content}</div>
               </div>
