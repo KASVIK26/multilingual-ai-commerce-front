@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -217,7 +216,7 @@ function parseAmazonHTMLRobust(html: string, keywords: string, params: any): Pro
             const price = `₹${priceText.replace(/,/g, '')}`
             
             // Extract additional data
-            const image = extractImageUrl(html, asin) || getDefaultImage(keywords)
+            const image = extractImageUrl(html, asin) || getImageForType('smartphone')
             const link = `https://www.amazon.in/dp/${asin}`
             const rating = extractRating(html, asin)
             const reviewCount = extractReviewCount(html, asin)
@@ -345,25 +344,164 @@ function cleanImageUrl(url: string): string {
   return url
 }
 
-function getDefaultImage(keywords: string): string {
+function getImageForType(productType: string): string {
   const categoryImages = {
-    phone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
+    iphone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
+    samsung: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
     laptop: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop',
-    headphone: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop',
-    watch: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop',
-    camera: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&h=300&fit=crop',
-    mobile: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
+    headphones: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop',
     smartphone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop'
   }
   
+  return categoryImages[productType as keyof typeof categoryImages] || categoryImages.smartphone
+}
+
+function generateSmartMockProducts(keywords: string, params: any): Product[] {
+  console.log('🎭 Generating smart mock products for:', keywords, 'with params:', params)
+  
+  const timestamp = Date.now()
+  const products: Product[] = []
+  
+  // Detect product type from keywords
   const lowerKeywords = keywords.toLowerCase()
-  for (const [key, image] of Object.entries(categoryImages)) {
-    if (lowerKeywords.includes(key)) {
-      return image
-    }
+  let productType = 'smartphone'
+  let detectedBrand = params.brand
+  
+  // Detect product category
+  if (lowerKeywords.includes('iphone') || lowerKeywords.includes('apple')) {
+    productType = 'iphone'
+    detectedBrand = 'Apple'
+  } else if (lowerKeywords.includes('samsung')) {
+    productType = 'samsung'
+    detectedBrand = 'Samsung'
+  } else if (lowerKeywords.includes('laptop') || lowerKeywords.includes('computer')) {
+    productType = 'laptop'
+  } else if (lowerKeywords.includes('headphone') || lowerKeywords.includes('earphone')) {
+    productType = 'headphones'
+  }
+
+  // Generate realistic product data based on type
+  const productTemplates = getProductTemplates(productType, detectedBrand)
+  
+  // Smart price generation based on params
+  let basePrice = getBasePriceForType(productType)
+  if (params.max_price) {
+    basePrice = Math.min(basePrice, Math.floor(params.max_price * 0.7))
+  }
+  if (params.min_price) {
+    basePrice = Math.max(basePrice, params.min_price)
   }
   
-  return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop'
+  // Generate 8-12 products
+  const productCount = Math.min(12, productTemplates.length)
+  
+  for (let i = 0; i < productCount; i++) {
+    const template = productTemplates[i % productTemplates.length]
+    
+    // Generate realistic price with variation
+    const priceVariation = Math.floor(Math.random() * (basePrice * 0.4)) - (basePrice * 0.2)
+    const finalPrice = Math.max(5000, basePrice + priceVariation)
+    
+    // Only include if within price range
+    if (params.min_price && finalPrice < params.min_price) continue
+    if (params.max_price && finalPrice > params.max_price) continue
+    
+    products.push({
+      id: `smart_mock_${timestamp}_${i}`,
+      title: template.title,
+      price: `₹${finalPrice.toLocaleString('en-IN')}`,
+      image: getImageForType(productType),
+      link: `https://amazon.in/dp/mock-${i}`,
+      is_amazon_choice: i < 2, // First 2 products are Amazon's choice
+      relevance_score: Math.max(0.6, 1.0 - (i * 0.05)),
+      match_reasons: ['keyword_match', 'category_match', 'price_range_match', 'ai_recommended'],
+      rating: (3.8 + Math.random() * 1.2).toFixed(1),
+      review_count: (Math.floor(Math.random() * 8000) + 500).toLocaleString()
+    })
+  }
+  
+  console.log(`✅ Generated ${products.length} smart mock products`)
+  return products
+}
+
+function getProductTemplates(productType: string, brand?: string): Array<{title: string}> {
+  switch (productType) {
+    case 'iphone':
+      return [
+        { title: 'Apple iPhone 15 (128GB) - Natural Titanium' },
+        { title: 'Apple iPhone 15 Plus (256GB) - Blue' },
+        { title: 'Apple iPhone 14 (128GB) - Midnight' },
+        { title: 'Apple iPhone 14 Plus (256GB) - Purple' },
+        { title: 'Apple iPhone 13 (128GB) - Pink' },
+        { title: 'Apple iPhone 13 mini (256GB) - Starlight' },
+        { title: 'Apple iPhone 15 Pro (256GB) - Pro Max Natural Titanium' },
+        { title: 'Apple iPhone 14 Pro (128GB) - Deep Purple' },
+        { title: 'Apple iPhone 13 Pro Max (512GB) - Sierra Blue' },
+        { title: 'Apple iPhone 12 (64GB) - Black' },
+        { title: 'Apple iPhone SE (3rd generation) (128GB) - Red' },
+        { title: 'Apple iPhone 15 Pro Max (1TB) - Blue Titanium' }
+      ]
+    
+    case 'samsung':
+      return [
+        { title: 'Samsung Galaxy S24 Ultra (256GB) - Titanium Gray' },
+        { title: 'Samsung Galaxy S24+ (512GB) - Onyx Black' },
+        { title: 'Samsung Galaxy S24 (128GB) - Marble Gray' },
+        { title: 'Samsung Galaxy A55 5G (128GB) - Awesome Iceblue' },
+        { title: 'Samsung Galaxy A35 5G (256GB) - Awesome Lilac' },
+        { title: 'Samsung Galaxy M55 5G (128GB) - Light Green' },
+        { title: 'Samsung Galaxy F55 5G (256GB) - Apricot Crush' },
+        { title: 'Samsung Galaxy A25 5G (128GB) - Blue Black' },
+        { title: 'Samsung Galaxy M35 5G (128GB) - Thunder Gray' },
+        { title: 'Samsung Galaxy A15 5G (128GB) - Light Blue' },
+        { title: 'Samsung Galaxy S23 FE (256GB) - Mint' },
+        { title: 'Samsung Galaxy A54 5G (128GB) - Awesome Violet' }
+      ]
+    
+    case 'laptop':
+      return [
+        { title: 'MacBook Air 13-inch (M2, 256GB SSD) - Midnight' },
+        { title: 'MacBook Pro 14-inch (M3, 512GB SSD) - Space Gray' },
+        { title: 'Dell XPS 13 Plus (11th Gen Intel i7, 512GB SSD)' },
+        { title: 'HP Spectre x360 14 (Intel i7, 1TB SSD) - Natural Silver' },
+        { title: 'Lenovo ThinkPad X1 Carbon (11th Gen, 256GB SSD)' },
+        { title: 'ASUS ZenBook 14 OLED (AMD Ryzen 7, 512GB SSD)' },
+        { title: 'Microsoft Surface Laptop 5 (Intel i5, 256GB SSD)' },
+        { title: 'Acer Swift X (AMD Ryzen 7, 512GB SSD) - Steam Blue' }
+      ]
+    
+    case 'headphones':
+      return [
+        { title: 'Apple AirPods Pro (2nd Generation) with MagSafe Case' },
+        { title: 'Sony WH-1000XM5 Wireless Noise Canceling Headphones' },
+        { title: 'Bose QuietComfort 45 Wireless Bluetooth Headphones' },
+        { title: 'Apple AirPods Max - Sky Blue' },
+        { title: 'Sennheiser Momentum 4 Wireless Headphones' },
+        { title: 'JBL Live 660NC Wireless Over-Ear Headphones' },
+        { title: 'Audio-Technica ATH-M50xBT2 Wireless Headphones' },
+        { title: 'Skullcandy Crusher Evo Wireless Over-Ear Headphones' }
+      ]
+    
+    default:
+      // Generic smartphone templates
+      const brands = brand ? [brand] : ['Samsung', 'Apple', 'OnePlus', 'Xiaomi', 'Realme', 'Oppo', 'Vivo']
+      return brands.flatMap(b => [
+        { title: `${b} Latest 5G Smartphone (128GB) - Premium Edition` },
+        { title: `${b} Pro Max (256GB) - Advanced Camera System` },
+        { title: `${b} Ultra 5G (512GB) - Flagship Performance` },
+        { title: `${b} Plus (128GB) - Enhanced Display Technology` }
+      ]).slice(0, 12)
+  }
+}
+
+function getBasePriceForType(productType: string): number {
+  switch (productType) {
+    case 'iphone': return 50000
+    case 'samsung': return 25000
+    case 'laptop': return 60000
+    case 'headphones': return 8000
+    default: return 20000
+  }
 }
 
 async function scrapeFlipkartRobust(keywords: string, params: any): Promise<Product[]> {
@@ -420,7 +558,7 @@ function parseFlipkartHTML(html: string, keywords: string, params: any): Product
             id: `flipkart_${Date.now()}_${productCount}`,
             title: title,
             price: price,
-            image: getDefaultImage(keywords),
+            image: getImageForType('smartphone'),
             link: link,
             is_amazon_choice: false,
             relevance_score: relevanceScore,
@@ -502,54 +640,6 @@ function getMatchReasons(title: string, keywords: string, params: any): string[]
 
   reasons.push('ai_recommended')
   return reasons
-}
-
-function generateSmartMockProducts(keywords: string, params: any): Product[] {
-  console.log('🎭 Generating smart mock products for:', keywords, 'with params:', params)
-  
-  const brands = params.brand ? [params.brand] : ['Samsung', 'Apple', 'OnePlus', 'Xiaomi', 'Sony', 'Oppo', 'Vivo', 'Realme', 'Motorola']
-  const models = ['Pro 5G', 'Max AI Camera', 'Ultra Fast Charging', 'Plus Wireless', 'Lite Gaming', 'SE Professional', 'Elite HD', 'Prime 4K', 'Advanced 5G', 'Premium AI Camera']
-  
-  const products: Product[] = []
-  const timestamp = Date.now()
-  
-  // Generate 10 products by default
-  for (let i = 0; i < 10; i++) {
-    const brand = brands[i % brands.length]
-    const model = models[i % models.length]
-    
-    // Smart price generation based on params
-    let basePrice = 15000
-    if (params.max_price) {
-      basePrice = Math.max(5000, Math.floor(params.max_price * 0.6))
-    }
-    if (params.min_price) {
-      basePrice = Math.max(basePrice, params.min_price)
-    }
-    
-    const priceVariation = Math.floor(Math.random() * 10000)
-    const finalPrice = basePrice + priceVariation
-    
-    // Only include if within price range
-    if (params.min_price && finalPrice < params.min_price) continue
-    if (params.max_price && finalPrice > params.max_price) continue
-    
-    products.push({
-      id: `smart_mock_${timestamp}_${i}`,
-      title: `${brand} ${keywords} ${model} - Latest Model with Advanced Features`,
-      price: `₹${finalPrice.toLocaleString('en-IN')}`,
-      image: getDefaultImage(keywords),
-      link: `https://amazon.in/dp/mock-${i}`,
-      is_amazon_choice: i < 2, // First 2 products are Amazon's choice
-      relevance_score: Math.max(0.5, 1.0 - (i * 0.05)),
-      match_reasons: ['keyword_match', 'brand_match', 'category_match', 'price_range_match', 'ai_recommended'],
-      rating: (3.8 + Math.random() * 1.2).toFixed(1),
-      review_count: (Math.floor(Math.random() * 8000) + 100).toLocaleString()
-    })
-  }
-  
-  console.log(`✅ Generated ${products.length} smart mock products`)
-  return products
 }
 
 function generateEmergencyFallback(): Product[] {
