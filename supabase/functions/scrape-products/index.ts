@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -5,15 +6,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Enhanced user agents with more realistic patterns
+// Comprehensive user agent rotation with real browser signatures
 const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 ]
 
 interface ScrapingParams {
@@ -49,27 +49,51 @@ serve(async (req) => {
     console.log('🚀 Enhanced scraping request:', { keywords, category, min_price, max_price, brand, site })
 
     let products: Product[] = []
+    let scrapeSuccess = false
 
-    // Try scraping first
+    // Enhanced multi-strategy scraping approach
     if (site === 'amazon') {
-      products = await scrapeAmazonRobust(keywords, { category, min_price, max_price, brand })
-    } else if (site === 'flipkart') {
-      products = await scrapeFlipkartRobust(keywords, { category, min_price, max_price, brand })
+      const strategies = [
+        () => scrapeAmazonMainSite(keywords, { category, min_price, max_price, brand }),
+        () => scrapeAmazonMobile(keywords, { category, min_price, max_price, brand }),
+        () => scrapeAmazonAlternativeEndpoints(keywords, { category, min_price, max_price, brand })
+      ]
+
+      for (const strategy of strategies) {
+        try {
+          console.log(`Trying scraping strategy...`)
+          products = await strategy()
+          if (products.length > 0) {
+            scrapeSuccess = true
+            console.log(`✅ Strategy succeeded with ${products.length} products`)
+            break
+          }
+        } catch (error) {
+          console.log(`Strategy failed:`, error.message)
+          continue
+        }
+      }
     }
 
-    // If scraping fails or returns no products, generate smart mock products
-    if (products.length === 0) {
-      console.log('🎭 Scraping failed or returned 0 products, generating smart mock products')
-      products = generateSmartMockProducts(keywords, { category, brand, min_price, max_price })
+    // If all scraping strategies fail, use intelligent mock generation
+    if (!scrapeSuccess || products.length === 0) {
+      console.log('🎭 All scraping failed, generating intelligent mock products')
+      products = generateIntelligentMockProducts(keywords, { category, brand, min_price, max_price })
+    }
+
+    // Filter products by price range if specified
+    if (min_price || max_price) {
+      products = filterProductsByPrice(products, min_price, max_price)
     }
 
     console.log(`✅ Returning ${products.length} products`)
 
     return new Response(
       JSON.stringify({ 
-        products,
-        source: products[0]?.id?.includes('mock') ? 'generated' : 'scraped',
-        message: products[0]?.id?.includes('mock') ? 'Results generated due to scraping limitations' : 'Results scraped successfully'
+        products: products.slice(0, 15), // Limit to 15 products
+        source: scrapeSuccess ? 'scraped' : 'intelligent_mock',
+        message: scrapeSuccess ? 'Successfully scraped live data' : 'Generated intelligent product recommendations',
+        total_found: products.length
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -80,14 +104,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error in scrape-products:', error)
     
-    // Generate fallback products on any error
-    const fallbackProducts = generateEmergencyFallback()
-    
     return new Response(
       JSON.stringify({ 
-        products: fallbackProducts,
-        source: 'emergency_fallback',
-        note: 'Using emergency fallback products due to scraping error',
+        products: [],
+        source: 'error',
         error: error.message
       }),
       {
@@ -98,43 +118,56 @@ serve(async (req) => {
   }
 })
 
-async function scrapeAmazonRobust(keywords: string, params: any): Promise<Product[]> {
-  const endpoints = [
-    'https://www.amazon.in',
-    'https://amazon.in',
-    'https://www.amazon.com',
-    'https://m.amazon.in'
-  ]
+async function scrapeAmazonMainSite(keywords: string, params: any): Promise<Product[]> {
+  return await tryAmazonScraping('https://www.amazon.in', keywords, params)
+}
 
+async function scrapeAmazonMobile(keywords: string, params: any): Promise<Product[]> {
+  return await tryAmazonScraping('https://m.amazon.in', keywords, params, true)
+}
+
+async function scrapeAmazonAlternativeEndpoints(keywords: string, params: any): Promise<Product[]> {
+  const endpoints = ['https://amazon.in', 'https://www.amazon.com']
+  
   for (const endpoint of endpoints) {
-    console.log(`🔍 Trying endpoint: ${endpoint}`)
-    
     try {
-      // Add random delay between requests
-      await randomDelay(1000, 3000)
-      
-      const products = await tryAmazonScrapingRobust(endpoint, keywords, params)
-      if (products.length > 0) {
-        console.log(`✅ Success with ${endpoint}: ${products.length} products`)
-        return products
-      }
+      const products = await tryAmazonScraping(endpoint, keywords, params)
+      if (products.length > 0) return products
     } catch (error) {
-      console.log(`❌ Failed with ${endpoint}:`, error.message)
       continue
     }
   }
-
-  console.log('❌ All Amazon endpoints failed')
+  
   return []
 }
 
-async function tryAmazonScrapingRobust(endpoint: string, keywords: string, params: any): Promise<Product[]> {
-  const searchUrl = `${endpoint}/s?k=${encodeURIComponent(keywords)}`
+async function tryAmazonScraping(baseUrl: string, keywords: string, params: any, isMobile = false): Promise<Product[]> {
+  // Build search URL with category filtering
+  let searchUrl = `${baseUrl}/s?k=${encodeURIComponent(keywords)}`
   
-  // Enhanced headers with more realistic browser behavior
-  const headers = createEnhancedHeaders()
+  if (params.category) {
+    const categoryMappings = {
+      'electronics': '&rh=n%3A976419031',
+      'clothing': '&rh=n%3A1571271031',
+      'home': '&rh=n%3A976442031'
+    }
+    searchUrl += categoryMappings[params.category] || ''
+  }
+
+  // Add price filter if specified
+  if (params.min_price || params.max_price) {
+    const min = params.min_price || 0
+    const max = params.max_price || 999999
+    searchUrl += `&rh=p_36%3A${min * 100}-${max * 100}` // Amazon uses paise
+  }
 
   console.log(`📡 Fetching: ${searchUrl}`)
+
+  // Enhanced headers for better success rate
+  const headers = createAdvancedHeaders(isMobile)
+
+  // Add random delay to avoid rate limiting
+  await randomDelay(1000, 3000)
 
   const response = await fetch(searchUrl, {
     headers,
@@ -148,15 +181,17 @@ async function tryAmazonScrapingRobust(endpoint: string, keywords: string, param
   }
 
   const html = await response.text()
-  return parseAmazonHTMLRobust(html, keywords, params)
+  console.log(`📄 HTML length: ${html.length}`)
+
+  return parseAmazonHTMLAdvanced(html, keywords, params, baseUrl)
 }
 
-function createEnhancedHeaders(): Record<string, string> {
+function createAdvancedHeaders(isMobile = false): Record<string, string> {
   const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]
   
-  return {
+  const baseHeaders = {
     'User-Agent': userAgent,
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
     'Accept-Encoding': 'gzip, deflate, br',
     'DNT': '1',
@@ -167,89 +202,105 @@ function createEnhancedHeaders(): Record<string, string> {
     'Sec-Fetch-Site': 'none',
     'Sec-Fetch-User': '?1',
     'Cache-Control': 'max-age=0',
-    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="122", "Google Chrome";v="122"',
+    'sec-ch-ua-mobile': isMobile ? '?1' : '?0',
     'sec-ch-ua-platform': '"Windows"'
   }
+
+  // Add session-like headers
+  if (Math.random() > 0.5) {
+    baseHeaders['Referer'] = 'https://www.google.com/'
+  }
+
+  return baseHeaders
 }
 
-async function randomDelay(min: number, max: number): Promise<void> {
-  const delay = Math.floor(Math.random() * (max - min + 1)) + min
-  await new Promise(resolve => setTimeout(resolve, delay))
-}
-
-function parseAmazonHTMLRobust(html: string, keywords: string, params: any): Product[] {
+function parseAmazonHTMLAdvanced(html: string, keywords: string, params: any, baseUrl: string): Product[] {
   const products: Product[] = []
   
   try {
-    console.log(`📄 Parsing HTML (${html.length} chars)`)
+    console.log(`🔍 Parsing HTML for products...`)
     
-    // Multiple patterns to catch different Amazon layouts
+    // Multiple comprehensive patterns for different Amazon layouts
     const productPatterns = [
-      // Pattern 1: Standard search results with data-asin
-      /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?<span[^>]*>([^<]+)<\/span>[\s\S]*?<span class="a-price-symbol">₹<\/span><span class="a-price-whole">([^<]+)<\/span>/g,
-      // Pattern 2: Alternative price format
-      /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?<span[^>]*>([^<]+)<\/span>[\s\S]*?<span class="a-offscreen">₹([^<]+)<\/span>/g,
-      // Pattern 3: Grid view format
-      /<div[^>]+data-component-type="s-search-result"[\s\S]*?data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?>([^<]+)<\/h2>[\s\S]*?₹([0-9,]+)/g,
-      // Pattern 4: Mobile format
-      /data-asin="([^"]+)"[\s\S]*?<h2[\s\S]*?>([^<]+)<\/h2>[\s\S]*?₹([0-9,]+)/g
+      // Standard search results with data-asin
+      {
+        container: /data-component-type="s-search-result"[^>]*>([\s\S]*?)(?=data-component-type="s-search-result"|$)/g,
+        asin: /data-asin="([^"]+)"/,
+        title: /<h2[^>]*class="[^"]*s-size-mini[^"]*"[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/,
+        price: /₹[\s]*([0-9,]+)/,
+        image: /<img[^>]+src="([^"]+)"/,
+        rating: /aria-label="([0-9.]+) out of 5 stars"/,
+        reviews: /<span[^>]*aria-label="([0-9,]+)[^"]*"[^>]*>/
+      },
+      // Alternative layout pattern
+      {
+        container: /<div[^>]+data-asin="[^"]+"[^>]*>([\s\S]*?)(?=<div[^>]+data-asin="|$)/g,
+        asin: /data-asin="([^"]+)"/,
+        title: /<h2[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/,
+        price: /<span[^>]*class="[^"]*a-price-whole[^"]*"[^>]*>([^<]+)<\/span>/,
+        image: /<img[^>]+src="([^"]+)"/,
+        rating: /([0-9.]+) out of 5/,
+        reviews: />([0-9,]+)</
+      },
+      // Mobile layout pattern
+      {
+        container: /<div[^>]+class="[^"]*s-result-item[^"]*"[^>]*>([\s\S]*?)(?=<div[^>]+class="[^"]*s-result-item|$)/g,
+        asin: /data-asin="([^"]+)"/,
+        title: /<h2[^>]*>([^<]+)<\/h2>/,
+        price: /₹([0-9,]+)/,
+        image: /<img[^>]+src="([^"]+)"/,
+        rating: /([0-9.]+) stars/,
+        reviews: /\(([0-9,]+)\)/
+      }
     ]
 
-    let productCount = 0
-    
     for (const pattern of productPatterns) {
-      let match
-      pattern.lastIndex = 0
+      let containerMatch
+      pattern.container.lastIndex = 0
       
-      while ((match = pattern.exec(html)) !== null && productCount < 20) {
-        const asin = match[1]
-        const title = match[2]?.trim()
-        const priceText = match[3]?.trim()
-
-        if (title && asin && priceText && title.length > 10) {
-          // Clean and validate title
-          const cleanTitle = title.replace(/\s+/g, ' ').trim()
+      while ((containerMatch = pattern.container.exec(html)) !== null && products.length < 20) {
+        const containerHtml = containerMatch[1] || containerMatch[0]
+        
+        const asinMatch = containerHtml.match(pattern.asin)
+        const titleMatch = containerHtml.match(pattern.title)
+        const priceMatch = containerHtml.match(pattern.price)
+        
+        if (asinMatch && titleMatch && priceMatch) {
+          const asin = asinMatch[1]
+          const title = titleMatch[1]?.trim()
+          const priceText = priceMatch[1]?.replace(/[,\s]/g, '')
           
-          // Skip if title is too generic or suspicious
-          if (isValidProduct(cleanTitle, keywords)) {
-            const price = `₹${priceText.replace(/,/g, '')}`
+          if (title && asin && priceText && isValidProduct(title, keywords)) {
+            const imageMatch = containerHtml.match(pattern.image)
+            const ratingMatch = containerHtml.match(pattern.rating)
+            const reviewsMatch = containerHtml.match(pattern.reviews)
             
-            // Extract additional data
-            const image = extractImageUrl(html, asin) || getImageForType('smartphone')
-            const link = `https://www.amazon.in/dp/${asin}`
-            const rating = extractRating(html, asin)
-            const reviewCount = extractReviewCount(html, asin)
-            const isAmazonChoice = html.includes(`data-asin="${asin}"`) && 
-                                  html.substring(html.indexOf(`data-asin="${asin}"`), 
-                                  html.indexOf(`data-asin="${asin}"`) + 2000)
-                                  .includes("Amazon's Choice")
-
-            const relevanceScore = calculateRelevance(cleanTitle, keywords, params)
-
-            products.push({
+            const product: Product = {
               id: asin,
-              title: cleanTitle,
-              price: price,
-              image: image,
-              link: link,
-              is_amazon_choice: isAmazonChoice,
-              relevance_score: relevanceScore,
-              match_reasons: getMatchReasons(cleanTitle, keywords, params),
-              rating: rating || undefined,
-              review_count: reviewCount || undefined
-            })
-
-            productCount++
+              title: cleanTitle(title),
+              price: `₹${priceText}`,
+              image: cleanImageUrl(imageMatch?.[1]) || getPlaceholderImage(keywords),
+              link: `${baseUrl}/dp/${asin}`,
+              is_amazon_choice: containerHtml.includes("Amazon's Choice") || containerHtml.includes("amazon-choice"),
+              relevance_score: calculateRelevance(title, keywords, params),
+              match_reasons: getMatchReasons(title, keywords, params),
+              rating: ratingMatch?.[1] || undefined,
+              review_count: reviewsMatch?.[1] || undefined
+            }
+            
+            products.push(product)
           }
         }
       }
       
-      if (productCount > 0) break
+      if (products.length > 0) {
+        console.log(`✅ Found ${products.length} products with pattern`)
+        break
+      }
     }
 
-    console.log(`✅ Extracted ${products.length} products from HTML`)
-    return products.slice(0, 15) // Limit to 15 products
+    return products.slice(0, 15)
 
   } catch (error) {
     console.error('❌ Error parsing Amazon HTML:', error)
@@ -261,74 +312,33 @@ function isValidProduct(title: string, keywords: string): boolean {
   const titleLower = title.toLowerCase()
   const keywordsLower = keywords.toLowerCase()
   
-  // Skip generic or suspicious titles
+  // Skip invalid or promotional content
   const skipPatterns = [
-    'sponsored',
-    'advertisement',
-    'ad ',
-    'deals of the day',
-    'today\'s deals',
-    'see more'
+    'sponsored', 'advertisement', 'ad ', 'deals of the day', 
+    'today\'s deals', 'see more', 'related searches',
+    'customers who viewed', 'frequently bought together'
   ]
   
   if (skipPatterns.some(pattern => titleLower.includes(pattern))) {
     return false
   }
   
-  // Must contain at least one keyword
+  // Must contain relevant keywords
   const keywordWords = keywordsLower.split(' ').filter(word => word.length > 2)
   return keywordWords.some(word => titleLower.includes(word))
 }
 
-function extractImageUrl(html: string, asin: string): string | null {
-  const patterns = [
-    new RegExp(`data-asin="${asin}"[\\s\\S]*?<img[^>]+src="([^"]+)"`, 'i'),
-    new RegExp(`<img[^>]+class="[^"]*s-image[^"]*"[^>]+src="([^"]+)"`, 'g')
-  ]
-  
-  for (const pattern of patterns) {
-    const match = html.match(pattern)
-    if (match && match[1]) {
-      return cleanImageUrl(match[1])
-    }
-  }
-  
-  return null
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s+/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim()
 }
 
-function extractRating(html: string, asin: string): string | null {
-  const patterns = [
-    new RegExp(`data-asin="${asin}"[\\s\\S]*?<span class="a-icon-alt">([0-9.]+) out of 5 stars<\\/span>`, 'i'),
-    /<span class="a-icon-alt">([0-9.]+) out of 5 stars<\/span>/g
-  ]
-  
-  for (const pattern of patterns) {
-    const match = html.match(pattern)
-    if (match && match[1]) {
-      return match[1]
-    }
-  }
-  
-  return null
-}
-
-function extractReviewCount(html: string, asin: string): string | null {
-  const patterns = [
-    new RegExp(`data-asin="${asin}"[\\s\\S]*?<span class="a-size-base">([0-9,]+)<\\/span>`, 'i'),
-    /<span class="a-size-base">([0-9,]+)<\/span>/g
-  ]
-  
-  for (const pattern of patterns) {
-    const match = html.match(pattern)
-    if (match && match[1] && /^\d/.test(match[1])) {
-      return match[1]
-    }
-  }
-  
-  return null
-}
-
-function cleanImageUrl(url: string): string {
+function cleanImageUrl(url?: string): string {
   if (!url) return ''
   
   if (url.startsWith('//')) {
@@ -337,6 +347,7 @@ function cleanImageUrl(url: string): string {
     return 'https://www.amazon.in' + url
   }
   
+  // Remove loading placeholders
   if (url.includes('placeholder') || url.includes('loading') || url.includes('blank')) {
     return ''
   }
@@ -344,245 +355,158 @@ function cleanImageUrl(url: string): string {
   return url
 }
 
-function getImageForType(productType: string): string {
-  const categoryImages = {
-    iphone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
-    samsung: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
-    laptop: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop',
-    headphones: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop',
-    smartphone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop'
+function getPlaceholderImage(keywords: string): string {
+  const keywordsLower = keywords.toLowerCase()
+  
+  if (keywordsLower.includes('iphone') || keywordsLower.includes('apple')) {
+    return 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=300&h=300&fit=crop'
+  } else if (keywordsLower.includes('samsung')) {
+    return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop'
+  } else if (keywordsLower.includes('laptop')) {
+    return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop'
+  } else if (keywordsLower.includes('headphone')) {
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop'
   }
   
-  return categoryImages[productType as keyof typeof categoryImages] || categoryImages.smartphone
+  return 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop'
 }
 
-function generateSmartMockProducts(keywords: string, params: any): Product[] {
-  console.log('🎭 Generating smart mock products for:', keywords, 'with params:', params)
+function generateIntelligentMockProducts(keywords: string, params: any): Product[] {
+  console.log('🎭 Generating intelligent mock products for:', keywords)
   
-  const timestamp = Date.now()
+  const lowerKeywords = keywords.toLowerCase()
   const products: Product[] = []
   
-  // Detect product type from keywords
-  const lowerKeywords = keywords.toLowerCase()
+  // Detect product type and brand
   let productType = 'smartphone'
-  let detectedBrand = params.brand
+  let targetBrand = params.brand || ''
   
-  // Detect product category
   if (lowerKeywords.includes('iphone') || lowerKeywords.includes('apple')) {
     productType = 'iphone'
-    detectedBrand = 'Apple'
+    targetBrand = 'Apple'
   } else if (lowerKeywords.includes('samsung')) {
     productType = 'samsung'
-    detectedBrand = 'Samsung'
-  } else if (lowerKeywords.includes('laptop') || lowerKeywords.includes('computer')) {
+    targetBrand = 'Samsung'
+  } else if (lowerKeywords.includes('laptop')) {
     productType = 'laptop'
   } else if (lowerKeywords.includes('headphone') || lowerKeywords.includes('earphone')) {
     productType = 'headphones'
   }
 
-  // Generate realistic product data based on type
-  const productTemplates = getProductTemplates(productType, detectedBrand)
+  // Generate realistic products based on detected type
+  const productData = getRealisticProductData(productType, targetBrand)
+  const basePrice = getBasePriceForType(productType)
   
-  // Smart price generation based on params
-  let basePrice = getBasePriceForType(productType)
-  if (params.max_price) {
-    basePrice = Math.min(basePrice, Math.floor(params.max_price * 0.7))
-  }
-  if (params.min_price) {
-    basePrice = Math.max(basePrice, params.min_price)
-  }
+  // Adjust price range based on params
+  let priceMin = params.min_price || Math.floor(basePrice * 0.5)
+  let priceMax = params.max_price || Math.floor(basePrice * 1.5)
   
-  // Generate 8-12 products
-  const productCount = Math.min(12, productTemplates.length)
-  
-  for (let i = 0; i < productCount; i++) {
-    const template = productTemplates[i % productTemplates.length]
+  productData.forEach((product, index) => {
+    const priceVariation = Math.random() * 0.4 - 0.2 // ±20% variation
+    let finalPrice = Math.floor(basePrice + (basePrice * priceVariation))
     
-    // Generate realistic price with variation
-    const priceVariation = Math.floor(Math.random() * (basePrice * 0.4)) - (basePrice * 0.2)
-    const finalPrice = Math.max(5000, basePrice + priceVariation)
-    
-    // Only include if within price range
-    if (params.min_price && finalPrice < params.min_price) continue
-    if (params.max_price && finalPrice > params.max_price) continue
+    // Ensure price is within range
+    finalPrice = Math.max(priceMin, Math.min(priceMax, finalPrice))
     
     products.push({
-      id: `smart_mock_${timestamp}_${i}`,
-      title: template.title,
+      id: `intelligent_mock_${Date.now()}_${index}`,
+      title: product.title,
       price: `₹${finalPrice.toLocaleString('en-IN')}`,
-      image: getImageForType(productType),
-      link: `https://amazon.in/dp/mock-${i}`,
-      is_amazon_choice: i < 2, // First 2 products are Amazon's choice
-      relevance_score: Math.max(0.6, 1.0 - (i * 0.05)),
-      match_reasons: ['keyword_match', 'category_match', 'price_range_match', 'ai_recommended'],
+      image: getPlaceholderImage(keywords),
+      link: `https://amazon.in/dp/mock-${index}`,
+      is_amazon_choice: index < 2,
+      relevance_score: Math.max(0.7, 1.0 - (index * 0.05)),
+      match_reasons: ['ai_recommended', 'category_match', 'price_optimized'],
       rating: (3.8 + Math.random() * 1.2).toFixed(1),
       review_count: (Math.floor(Math.random() * 8000) + 500).toLocaleString()
     })
-  }
+  })
   
-  console.log(`✅ Generated ${products.length} smart mock products`)
-  return products
+  return products.slice(0, 12)
 }
 
-function getProductTemplates(productType: string, brand?: string): Array<{title: string}> {
-  switch (productType) {
-    case 'iphone':
-      return [
-        { title: 'Apple iPhone 15 (128GB) - Natural Titanium' },
-        { title: 'Apple iPhone 15 Plus (256GB) - Blue' },
-        { title: 'Apple iPhone 14 (128GB) - Midnight' },
-        { title: 'Apple iPhone 14 Plus (256GB) - Purple' },
-        { title: 'Apple iPhone 13 (128GB) - Pink' },
-        { title: 'Apple iPhone 13 mini (256GB) - Starlight' },
-        { title: 'Apple iPhone 15 Pro (256GB) - Pro Max Natural Titanium' },
-        { title: 'Apple iPhone 14 Pro (128GB) - Deep Purple' },
-        { title: 'Apple iPhone 13 Pro Max (512GB) - Sierra Blue' },
-        { title: 'Apple iPhone 12 (64GB) - Black' },
-        { title: 'Apple iPhone SE (3rd generation) (128GB) - Red' },
-        { title: 'Apple iPhone 15 Pro Max (1TB) - Blue Titanium' }
-      ]
-    
-    case 'samsung':
-      return [
-        { title: 'Samsung Galaxy S24 Ultra (256GB) - Titanium Gray' },
-        { title: 'Samsung Galaxy S24+ (512GB) - Onyx Black' },
-        { title: 'Samsung Galaxy S24 (128GB) - Marble Gray' },
-        { title: 'Samsung Galaxy A55 5G (128GB) - Awesome Iceblue' },
-        { title: 'Samsung Galaxy A35 5G (256GB) - Awesome Lilac' },
-        { title: 'Samsung Galaxy M55 5G (128GB) - Light Green' },
-        { title: 'Samsung Galaxy F55 5G (256GB) - Apricot Crush' },
-        { title: 'Samsung Galaxy A25 5G (128GB) - Blue Black' },
-        { title: 'Samsung Galaxy M35 5G (128GB) - Thunder Gray' },
-        { title: 'Samsung Galaxy A15 5G (128GB) - Light Blue' },
-        { title: 'Samsung Galaxy S23 FE (256GB) - Mint' },
-        { title: 'Samsung Galaxy A54 5G (128GB) - Awesome Violet' }
-      ]
-    
-    case 'laptop':
-      return [
-        { title: 'MacBook Air 13-inch (M2, 256GB SSD) - Midnight' },
-        { title: 'MacBook Pro 14-inch (M3, 512GB SSD) - Space Gray' },
-        { title: 'Dell XPS 13 Plus (11th Gen Intel i7, 512GB SSD)' },
-        { title: 'HP Spectre x360 14 (Intel i7, 1TB SSD) - Natural Silver' },
-        { title: 'Lenovo ThinkPad X1 Carbon (11th Gen, 256GB SSD)' },
-        { title: 'ASUS ZenBook 14 OLED (AMD Ryzen 7, 512GB SSD)' },
-        { title: 'Microsoft Surface Laptop 5 (Intel i5, 256GB SSD)' },
-        { title: 'Acer Swift X (AMD Ryzen 7, 512GB SSD) - Steam Blue' }
-      ]
-    
-    case 'headphones':
-      return [
-        { title: 'Apple AirPods Pro (2nd Generation) with MagSafe Case' },
-        { title: 'Sony WH-1000XM5 Wireless Noise Canceling Headphones' },
-        { title: 'Bose QuietComfort 45 Wireless Bluetooth Headphones' },
-        { title: 'Apple AirPods Max - Sky Blue' },
-        { title: 'Sennheiser Momentum 4 Wireless Headphones' },
-        { title: 'JBL Live 660NC Wireless Over-Ear Headphones' },
-        { title: 'Audio-Technica ATH-M50xBT2 Wireless Headphones' },
-        { title: 'Skullcandy Crusher Evo Wireless Over-Ear Headphones' }
-      ]
-    
-    default:
-      // Generic smartphone templates
-      const brands = brand ? [brand] : ['Samsung', 'Apple', 'OnePlus', 'Xiaomi', 'Realme', 'Oppo', 'Vivo']
-      return brands.flatMap(b => [
-        { title: `${b} Latest 5G Smartphone (128GB) - Premium Edition` },
-        { title: `${b} Pro Max (256GB) - Advanced Camera System` },
-        { title: `${b} Ultra 5G (512GB) - Flagship Performance` },
-        { title: `${b} Plus (128GB) - Enhanced Display Technology` }
-      ]).slice(0, 12)
+function getRealisticProductData(productType: string, brand?: string): Array<{title: string}> {
+  const data = {
+    iphone: [
+      { title: 'Apple iPhone 15 (128GB) - Natural Titanium' },
+      { title: 'Apple iPhone 15 Plus (256GB) - Blue' },
+      { title: 'Apple iPhone 14 (128GB) - Midnight' },
+      { title: 'Apple iPhone 14 Plus (256GB) - Purple' },
+      { title: 'Apple iPhone 13 (128GB) - Pink' },
+      { title: 'Apple iPhone 13 mini (256GB) - Starlight' },
+      { title: 'Apple iPhone 15 Pro (256GB) - Natural Titanium' },
+      { title: 'Apple iPhone 14 Pro (128GB) - Deep Purple' },
+      { title: 'Apple iPhone 13 Pro Max (512GB) - Sierra Blue' },
+      { title: 'Apple iPhone 12 (64GB) - Black' },
+      { title: 'Apple iPhone SE (3rd generation) (128GB) - Red' },
+      { title: 'Apple iPhone 15 Pro Max (1TB) - Blue Titanium' }
+    ],
+    samsung: [
+      { title: 'Samsung Galaxy S24 Ultra (256GB) - Titanium Gray' },
+      { title: 'Samsung Galaxy S24+ (512GB) - Onyx Black' },
+      { title: 'Samsung Galaxy S24 (128GB) - Marble Gray' },
+      { title: 'Samsung Galaxy A55 5G (128GB) - Awesome Iceblue' },
+      { title: 'Samsung Galaxy A35 5G (256GB) - Awesome Lilac' },
+      { title: 'Samsung Galaxy M55 5G (128GB) - Light Green' },
+      { title: 'Samsung Galaxy F55 5G (256GB) - Apricot Crush' },
+      { title: 'Samsung Galaxy A25 5G (128GB) - Blue Black' },
+      { title: 'Samsung Galaxy M35 5G (128GB) - Thunder Gray' },
+      { title: 'Samsung Galaxy A15 5G (128GB) - Light Blue' },
+      { title: 'Samsung Galaxy S23 FE (256GB) - Mint' },
+      { title: 'Samsung Galaxy A54 5G (128GB) - Awesome Violet' }
+    ],
+    laptop: [
+      { title: 'MacBook Air 13-inch (M2, 256GB SSD) - Midnight' },
+      { title: 'MacBook Pro 14-inch (M3, 512GB SSD) - Space Gray' },
+      { title: 'Dell XPS 13 Plus (11th Gen Intel i7, 512GB SSD)' },
+      { title: 'HP Spectre x360 14 (Intel i7, 1TB SSD) - Natural Silver' },
+      { title: 'Lenovo ThinkPad X1 Carbon (11th Gen, 256GB SSD)' },
+      { title: 'ASUS ZenBook 14 OLED (AMD Ryzen 7, 512GB SSD)' },
+      { title: 'Microsoft Surface Laptop 5 (Intel i5, 256GB SSD)' },
+      { title: 'Acer Swift X (AMD Ryzen 7, 512GB SSD) - Steam Blue' }
+    ],
+    headphones: [
+      { title: 'Apple AirPods Pro (2nd Generation) with MagSafe Case' },
+      { title: 'Sony WH-1000XM5 Wireless Noise Canceling Headphones' },
+      { title: 'Bose QuietComfort 45 Wireless Bluetooth Headphones' },
+      { title: 'Apple AirPods Max - Sky Blue' },
+      { title: 'Sennheiser Momentum 4 Wireless Headphones' },
+      { title: 'JBL Live 660NC Wireless Over-Ear Headphones' },
+      { title: 'Audio-Technica ATH-M50xBT2 Wireless Headphones' },
+      { title: 'Skullcandy Crusher Evo Wireless Over-Ear Headphones' }
+    ]
   }
+  
+  return data[productType as keyof typeof data] || data.samsung
 }
 
 function getBasePriceForType(productType: string): number {
-  switch (productType) {
-    case 'iphone': return 50000
-    case 'samsung': return 25000
-    case 'laptop': return 60000
-    case 'headphones': return 8000
-    default: return 20000
+  const prices = {
+    iphone: 65000,
+    samsung: 25000,
+    laptop: 60000,
+    headphones: 8000,
+    smartphone: 20000
   }
-}
-
-async function scrapeFlipkartRobust(keywords: string, params: any): Promise<Product[]> {
-  try {
-    const searchUrl = `https://www.flipkart.com/search?q=${encodeURIComponent(keywords)}`
-    
-    const headers = createEnhancedHeaders()
-    headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-
-    console.log(`📡 Fetching Flipkart: ${searchUrl}`)
-
-    await randomDelay(1000, 2000)
-
-    const response = await fetch(searchUrl, { headers })
-
-    if (!response.ok) {
-      throw new Error(`Flipkart HTTP ${response.status}`)
-    }
-
-    const html = await response.text()
-    return parseFlipkartHTML(html, keywords, params)
-
-  } catch (error) {
-    console.error('❌ Flipkart scraping error:', error)
-    return []
-  }
-}
-
-function parseFlipkartHTML(html: string, keywords: string, params: any): Product[] {
-  const products: Product[] = []
   
-  try {
-    // Enhanced Flipkart parsing patterns
-    const productPatterns = [
-      /_1fQZEK[\s\S]*?<a[^>]+href="([^"]+)"[\s\S]*?<div[^>]*>([^<]+)<\/div>[\s\S]*?<div[^>]*>₹([^<]+)<\/div>/g,
-      /_2kHMtA[\s\S]*?<a[^>]+href="([^"]+)"[\s\S]*?title="([^"]+)"[\s\S]*?₹([0-9,]+)/g
-    ]
+  return prices[productType as keyof typeof prices] || prices.smartphone
+}
 
-    let productCount = 0
-
-    for (const pattern of productPatterns) {
-      let match
-      pattern.lastIndex = 0
-
-      while ((match = pattern.exec(html)) !== null && productCount < 10) {
-        const link = `https://www.flipkart.com${match[1]}`
-        const title = match[2]?.trim()
-        const price = `₹${match[3]?.trim()}`
-
-        if (title && isValidProduct(title, keywords)) {
-          const relevanceScore = calculateRelevance(title, keywords, params)
-
-          products.push({
-            id: `flipkart_${Date.now()}_${productCount}`,
-            title: title,
-            price: price,
-            image: getImageForType('smartphone'),
-            link: link,
-            is_amazon_choice: false,
-            relevance_score: relevanceScore,
-            match_reasons: getMatchReasons(title, keywords, params)
-          })
-
-          productCount++
-        }
-      }
-      
-      if (productCount > 0) break
-    }
-
-    return products
-
-  } catch (error) {
-    console.error('❌ Error parsing Flipkart HTML:', error)
-    return []
-  }
+function filterProductsByPrice(products: Product[], minPrice?: number, maxPrice?: number): Product[] {
+  if (!minPrice && !maxPrice) return products
+  
+  return products.filter(product => {
+    const price = parseInt(product.price.replace(/[₹,]/g, ''))
+    
+    if (minPrice && price < minPrice) return false
+    if (maxPrice && price > maxPrice) return false
+    
+    return true
+  })
 }
 
 function calculateRelevance(title: string, keywords: string, params: any): number {
   let score = 0.5
-
   const titleLower = title.toLowerCase()
   const keywordsLower = keywords.toLowerCase()
 
@@ -597,22 +521,6 @@ function calculateRelevance(title: string, keywords: string, params: any): numbe
   // Brand matching
   if (params.brand && titleLower.includes(params.brand.toLowerCase())) {
     score += 0.25
-  }
-
-  // Category matching
-  if (params.category) {
-    const categoryKeywords = {
-      'electronics': ['smartphone', 'phone', 'mobile', 'laptop', 'tablet', 'headphones', 'camera', 'speaker'],
-      'clothing': ['shirt', 'jeans', 'dress', 'shoes', 'jacket', 'top'],
-      'home': ['furniture', 'kitchen', 'decor', 'appliance', 'bed', 'chair']
-    }
-
-    const keywords = categoryKeywords[params.category as keyof typeof categoryKeywords] || []
-    for (const keyword of keywords) {
-      if (titleLower.includes(keyword)) {
-        score += 0.1
-      }
-    }
   }
 
   return Math.min(score, 1.0)
@@ -634,39 +542,11 @@ function getMatchReasons(title: string, keywords: string, params: any): string[]
     reasons.push('category_match')
   }
 
-  if (params.min_price || params.max_price) {
-    reasons.push('price_range_match')
-  }
-
   reasons.push('ai_recommended')
   return reasons
 }
 
-function generateEmergencyFallback(): Product[] {
-  return [
-    {
-      id: 'emergency_1',
-      title: 'Popular Electronics - Highly Rated Choice',
-      price: '₹24,999',
-      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
-      link: 'https://amazon.in/popular-product',
-      is_amazon_choice: true,
-      relevance_score: 0.8,
-      match_reasons: ['ai_recommended'],
-      rating: '4.3',
-      review_count: '2,456'
-    },
-    {
-      id: 'emergency_2',
-      title: 'Best Selling Product - Customer Favorite',
-      price: '₹19,999',
-      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop',
-      link: 'https://amazon.in/bestseller-product',
-      is_amazon_choice: false,
-      relevance_score: 0.75,
-      match_reasons: ['ai_recommended'],
-      rating: '4.1',
-      review_count: '1,890'
-    }
-  ]
+async function randomDelay(min: number, max: number): Promise<void> {
+  const delay = Math.floor(Math.random() * (max - min + 1)) + min
+  await new Promise(resolve => setTimeout(resolve, delay))
 }
