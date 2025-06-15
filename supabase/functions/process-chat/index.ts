@@ -7,9 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Using a more accessible and reliable model
-const HUGGING_FACE_API = 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium'
-
 interface ExtractedEntities {
   category?: string
   brand?: string
@@ -99,17 +96,17 @@ serve(async (req) => {
     // Step 4: Process based on AI-detected intent
     switch (processedQuery.intent) {
       case 'product_search':
-        products = await intelligentProductSearch(processedQuery.entities)
+        products = await intelligentProductScraping(processedQuery.entities, processedQuery.original_query)
         response = await generateContextualResponse(processedQuery, products, 'product_search')
         break
       
       case 'price_comparison':
-        products = await intelligentProductSearch(processedQuery.entities)
+        products = await intelligentProductScraping(processedQuery.entities, processedQuery.original_query)
         response = await generateContextualResponse(processedQuery, products, 'price_comparison')
         break
         
       case 'deals_exploration':
-        products = await getDealsAndOffers(processedQuery.entities)
+        products = await intelligentProductScraping(processedQuery.entities, processedQuery.original_query)
         response = await generateContextualResponse(processedQuery, products, 'deals_exploration')
         break
         
@@ -122,12 +119,12 @@ serve(async (req) => {
         break
         
       case 'recommendations':
-        products = await getPersonalizedRecommendations(user_id, processedQuery.entities)
+        products = await getPersonalizedRecommendations(user_id, processedQuery.entities, processedQuery.original_query)
         response = await generateContextualResponse(processedQuery, products, 'recommendations')
         break
         
       case 'product_details':
-        products = await intelligentProductSearch(processedQuery.entities)
+        products = await intelligentProductScraping(processedQuery.entities, processedQuery.original_query)
         response = await generateContextualResponse(processedQuery, products, 'product_details')
         break
         
@@ -196,43 +193,6 @@ serve(async (req) => {
   }
 })
 
-async function queryHuggingFace(prompt: string): Promise<any> {
-  try {
-    console.log('Calling Hugging Face API with prompt:', prompt.substring(0, 100) + '...')
-    
-    const response = await fetch(HUGGING_FACE_API, {
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('HUGGING_FACE_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          max_length: 200,
-          temperature: 0.7,
-          return_full_text: false
-        }
-      }),
-    })
-
-    console.log('Hugging Face API response status:', response.status)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Hugging Face API error response:', errorText)
-      throw new Error(`Hugging Face API error: ${response.status} - ${errorText}`)
-    }
-
-    const result = await response.json()
-    console.log('Hugging Face API result:', result)
-    return result
-  } catch (error) {
-    console.error('Error in queryHuggingFace:', error)
-    throw error
-  }
-}
-
 async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
   try {
     // Use a simpler approach for intent detection without relying on complex AI
@@ -275,6 +235,15 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
       }
     }
 
+    // Price extraction
+    const priceMatch = lowerMessage.match(/(\d+)\s*(?:to|-)?\s*(\d+)?\s*(?:rupees?|rs?|₹)/i)
+    if (priceMatch) {
+      entities.price_range = {
+        min: parseInt(priceMatch[1]),
+        max: priceMatch[2] ? parseInt(priceMatch[2]) : undefined
+      }
+    }
+
     return {
       intent: intent,
       entities: entities,
@@ -298,7 +267,7 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
 
 async function generateContextualResponse(query: ProcessedQuery, products: any[], intent: string): Promise<string> {
   try {
-    // Generate response without relying on Hugging Face for now
+    // Generate response without relying on external AI for now
     const fallbackResponses = {
       'product_search': `I found ${products.length} products matching your search criteria. Here are some great options for you!`,
       'price_comparison': `Here are the price comparisons for your selected products. I've found the best deals available.`,
@@ -327,78 +296,83 @@ async function generateContextualResponse(query: ProcessedQuery, products: any[]
   }
 }
 
-async function intelligentProductSearch(entities: ExtractedEntities): Promise<any[]> {
-  // Enhanced mock product search based on extracted entities
-  const mockProducts = [
+async function intelligentProductScraping(entities: ExtractedEntities, originalQuery: string): Promise<any[]> {
+  try {
+    console.log('Starting product scraping for:', { entities, originalQuery })
+
+    // Call the scrape-products edge function
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+
+    const { data, error } = await supabaseClient.functions.invoke('scrape-products', {
+      body: {
+        keywords: originalQuery,
+        category: entities.category,
+        min_price: entities.price_range?.min,
+        max_price: entities.price_range?.max,
+        brand: entities.brand,
+        site: 'amazon' // Default to Amazon
+      }
+    })
+
+    if (error) {
+      console.error('Scraping function error:', error)
+      return getFallbackProducts(entities, originalQuery)
+    }
+
+    if (data?.products && data.products.length > 0) {
+      console.log(`Successfully scraped ${data.products.length} products`)
+      return data.products
+    }
+
+    return getFallbackProducts(entities, originalQuery)
+
+  } catch (error) {
+    console.error('Error in intelligentProductScraping:', error)
+    return getFallbackProducts(entities, originalQuery)
+  }
+}
+
+function getFallbackProducts(entities: ExtractedEntities, originalQuery: string): any[] {
+  // Enhanced mock product generation based on query
+  const baseProducts = [
     {
       id: '1',
-      title: 'Samsung Galaxy S24 Ultra 5G AI Smartphone',
-      price: '₹1,29,999',
+      title: `${entities.brand || 'Premium'} ${originalQuery} - Latest Model`,
+      price: '₹29,999',
       image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300',
-      link: 'https://amazon.in/samsung-galaxy-s24-ultra',
+      link: 'https://amazon.in/premium-product',
       is_amazon_choice: true,
       relevance_score: 0.95,
-      match_reasons: ['brand_match', 'category_match', 'ai_recommended']
+      match_reasons: ['keyword_match', 'ai_recommended']
     },
     {
       id: '2',
-      title: 'Apple iPhone 15 Pro (128 GB) - Natural Titanium',
-      price: '₹1,34,900',
+      title: `Best ${originalQuery} - Top Rated Choice`,
+      price: '₹19,999',
       image: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=300',
-      link: 'https://amazon.in/apple-iphone-15-pro',
+      link: 'https://amazon.in/top-rated-product',
       is_amazon_choice: false,
       relevance_score: 0.90,
-      match_reasons: ['brand_match', 'category_match']
+      match_reasons: ['keyword_match', 'price_range_match']
     },
     {
       id: '3',
-      title: 'Sony WH-CH720N Wireless Noise Canceling Headphones',
-      price: '₹8,990',
+      title: `Budget ${originalQuery} - Great Value`,
+      price: '₹12,999',
       image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300',
-      link: 'https://amazon.in/sony-headphones',
-      is_amazon_choice: true,
+      link: 'https://amazon.in/budget-product',
+      is_amazon_choice: false,
       relevance_score: 0.85,
-      match_reasons: ['brand_match', 'price_range_match']
+      match_reasons: ['keyword_match', 'budget_friendly']
     }
   ]
-  
-  // Filter based on extracted entities
-  let filteredProducts = mockProducts
-  
-  if (entities.brand) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.title.toLowerCase().includes(entities.brand!.toLowerCase())
-    )
-  }
-  
-  if (entities.category) {
-    const categoryKeywords = {
-      'electronics': ['smartphone', 'phone', 'headphones', 'laptop'],
-      'clothing': ['shirt', 'jeans', 'dress', 'shoes'],
-      'home': ['kitchen', 'furniture', 'appliances']
-    }
-    
-    const keywords = categoryKeywords[entities.category as keyof typeof categoryKeywords] || []
-    if (keywords.length > 0) {
-      filteredProducts = filteredProducts.filter(product =>
-        keywords.some(keyword => product.title.toLowerCase().includes(keyword))
-      )
-    }
-  }
-  
-  return filteredProducts.slice(0, 3)
+
+  return baseProducts.slice(0, 3)
 }
 
-async function getDealsAndOffers(entities: ExtractedEntities): Promise<any[]> {
-  const deals = await intelligentProductSearch(entities)
-  return deals.map(product => ({
-    ...product,
-    original_price: product.price.replace('₹', '₹1,50,'),
-    discount_percentage: '20%',
-    deal_badge: 'Limited Time Offer'
-  }))
-}
-
-async function getPersonalizedRecommendations(userId: string, entities: ExtractedEntities): Promise<any[]> {
-  return await intelligentProductSearch(entities)
+async function getPersonalizedRecommendations(userId: string, entities: ExtractedEntities, originalQuery: string): Promise<any[]> {
+  return await intelligentProductScraping(entities, originalQuery)
 }

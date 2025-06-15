@@ -3,3 +3,6 @@ project_id = "xaymwtshzpnxdammjwzz"
 
 [functions.process-chat]
 verify_jwt = false
+
+[functions.scrape-products]
+verify_jwt = false
