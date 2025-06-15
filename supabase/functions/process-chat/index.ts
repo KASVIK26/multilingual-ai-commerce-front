@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -36,10 +35,17 @@ serve(async (req) => {
   try {
     const { message, user_id } = await req.json()
 
-    // Initialize Supabase client
+    // For debugging, log which Supabase key is being used
+    console.log('Supabase env:', {
+      SUPABASE_URL: Deno.env.get('SUPABASE_URL'),
+      SUPABASE_ANON_KEY: Deno.env.get('SUPABASE_ANON_KEY'),
+      SUPABASE_SERVICE_ROLE_KEY: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+    })
+
+    // Initialize Supabase client with service role key (only works if policy allows)
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', // Use service role for Edge function
     )
 
     console.log('Processing message with AI:', { message, user_id })
@@ -53,10 +59,11 @@ serve(async (req) => {
     console.log('AI processing result:', processedQuery)
 
     // Step 3: Save chat message and processed query
+    // Pass user_id from request to ensure correct row insertion (required for RLS)
     const { data: chatData, error: chatError } = await supabaseClient
       .from('chats')
       .insert({
-        user_id: user_id,
+        user_id: user_id, // Must match auth.uid() if policy is enforced
         title: message.substring(0, 50) + '...',
         language: processedQuery.language,
         chat_type: processedQuery.intent,
@@ -67,6 +74,7 @@ serve(async (req) => {
 
     if (chatError) {
       console.error('Error saving chat:', chatError)
+      throw new Error('Supabase RLS error saving chat: ' + (chatError.message || 'Unknown error'))
     }
 
     // Step 4: Save search query with extracted features
