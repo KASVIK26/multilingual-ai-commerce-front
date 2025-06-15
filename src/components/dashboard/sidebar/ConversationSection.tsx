@@ -24,27 +24,27 @@ const ConversationSection = ({}: ConversationSectionProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-6 pb-4">
-      <div className="flex flex-col gap-3.5">
-        <div className="flex justify-between items-center">
-          <div className="text-black text-sm font-normal font-['Poppins']">
+    <div className="self-stretch flex flex-col justify-start items-start gap-6">
+      <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
+        <div className="self-stretch inline-flex justify-between items-center">
+          <div className="justify-center text-black text-sm font-normal font-['Poppins']">
             Conversations
           </div>
           <button
             onClick={handleClearConversations}
             className="w-20 h-9 px-5 py-0.5 bg-gradient-to-b from-blue-700 to-sky-700 rounded-[5px] flex justify-between items-center overflow-hidden hover:opacity-90 transition-opacity"
           >
-            <div className="text-stone-50 text-sm font-normal font-['Poppins']">
+            <div className="justify-center text-stone-50 text-sm font-normal font-['Poppins']">
               Clear
             </div>
           </button>
         </div>
         
-        <div className="px-2.5 py-3 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2.5 overflow-hidden">
-          <div className="flex flex-col">
-            <div className="h-9 px-2.5 py-[5px] bg-gray-200 rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden group relative">
-              <div className="w-full flex justify-between items-center">
-                <div className="text-black text-sm font-normal font-['Poppins']">
+        <div className="self-stretch px-2.5 py-3 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
+          <div className="self-stretch flex flex-col justify-start items-start">
+            <div className="self-stretch h-9 px-2.5 py-[5px] bg-gray-200 rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden group relative">
+              <div className="self-stretch inline-flex justify-between items-center">
+                <div className="justify-center text-black text-sm font-normal font-['Poppins']">
                   Shopping Chat Log
                 </div>
                 <div className="w-4 h-4 relative overflow-hidden">
@@ -59,10 +59,10 @@ const ConversationSection = ({}: ConversationSectionProps) => {
             {conversationItems.slice(1).map((item) => (
               <button
                 key={item}
-                className="h-9 px-2.5 py-[5px] rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]"
+                className="self-stretch h-9 px-2.5 py-[5px] rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]"
               >
-                <div className="w-full flex justify-between items-center">
-                  <div className="text-black text-sm font-normal font-['Poppins']">
+                <div className="self-stretch inline-flex justify-between items-center">
+                  <div className="justify-center text-black text-sm font-normal font-['Poppins']">
                     {item}
                   </div>
                 </div>
@@ -73,21 +73,21 @@ const ConversationSection = ({}: ConversationSectionProps) => {
       </div>
 
       {/* Last Week Section */}
-      <div className="flex flex-col gap-3.5">
-        <div className="flex justify-start items-center gap-32">
-          <div className="text-black text-sm font-normal font-['Poppins']">
+      <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
+        <div className="inline-flex justify-start items-center gap-32">
+          <div className="justify-center text-black text-sm font-normal font-['Poppins']">
             Last Week
           </div>
         </div>
-        <div className="px-2.5 py-3 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2.5 overflow-hidden">
-          <div className="flex flex-col">
+        <div className="self-stretch px-2.5 py-3 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
+          <div className="self-stretch flex flex-col justify-start items-start">
             {lastWeekItems.map((item) => (
               <button
                 key={item}
-                className="h-9 px-2.5 py-[5px] rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]"
+                className="self-stretch h-9 px-2.5 py-[5px] rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]"
               >
-                <div className="w-full flex justify-between items-center">
-                  <div className="text-black text-sm font-normal font-['Poppins']">
+                <div className="self-stretch inline-flex justify-between items-center">
+                  <div className="justify-center text-black text-sm font-normal font-['Poppins']">
                     {item}
                   </div>
                 </div>
@@ -98,21 +98,21 @@ const ConversationSection = ({}: ConversationSectionProps) => {
       </div>
 
       {/* Last Month Section */}
-      <div className="flex flex-col gap-3.5">
-        <div className="flex justify-start items-center gap-32">
-          <div className="text-black text-sm font-normal font-['Poppins']">
+      <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
+        <div className="inline-flex justify-start items-center gap-32">
+          <div className="justify-center text-black text-sm font-normal font-['Poppins']">
             Last Month
           </div>
         </div>
-        <div className="px-2.5 py-3 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col gap-2.5 overflow-hidden">
-          <div className="flex flex-col">
+        <div className="self-stretch px-2.5 py-3 bg-stone-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-stone-300/30 flex flex-col justify-start items-start gap-2.5 overflow-hidden">
+          <div className="self-stretch flex flex-col justify-start items-start">
             {lastMonthItems.map((item) => (
               <button
                 key={item}
-                className="h-9 px-2.5 py-[5px] rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]"
+                className="self-stretch h-9 px-2.5 py-[5px] rounded-lg flex flex-col justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]"
               >
-                <div className="w-full flex justify-between items-center">
-                  <div className="text-black text-sm font-normal font-['Poppins']">
+                <div className="self-stretch inline-flex justify-between items-center">
+                  <div className="justify-center text-black text-sm font-normal font-['Poppins']">
                     {item}
                   </div>
                 </div>
