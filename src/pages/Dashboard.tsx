@@ -24,13 +24,13 @@ const Dashboard = () => {
         Powered by Multilingual AI
       </div>
 
-      {/* Header */}
-      <div className="left-[378px] top-[20px] absolute">
+      {/* Header - adjusted left position to account for wider sidebar */}
+      <div className="left-[436px] top-[20px] absolute">
         <Header />
       </div>
 
-      {/* Stats Cards Container */}
-      <div className="w-[1042px] left-[378px] top-[124px] absolute inline-flex justify-between items-center">
+      {/* Stats Cards Container - adjusted left position */}
+      <div className="w-[984px] left-[436px] top-[124px] absolute inline-flex justify-between items-center">
         {/* Voice Orders Card */}
         <div className="w-60 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
           <div className="self-stretch inline-flex justify-start items-start gap-24">
@@ -200,8 +200,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="left-[378px] top-[294px] absolute inline-flex justify-start items-center gap-7">
+      {/* Charts Section - adjusted left position */}
+      <div className="left-[436px] top-[294px] absolute inline-flex justify-start items-center gap-7">
         {/* Revenue Chart */}
         <div className="w-[507px] h-64 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
           {/* Bottom Line */}
@@ -388,8 +388,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="left-[378px] top-[600px] absolute inline-flex justify-start items-center gap-7">
+      {/* Bottom Section - adjusted left position */}
+      <div className="left-[436px] top-[600px] absolute inline-flex justify-start items-center gap-7">
         {/* Product Overview Table */}
         <div className="w-[672px] h-80 relative bg-neutral-50 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden">
           {/* Header */}
