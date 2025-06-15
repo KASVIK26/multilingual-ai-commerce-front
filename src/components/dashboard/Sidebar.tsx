@@ -25,17 +25,26 @@ const Sidebar = () => {
       <div className="w-64 h-64 absolute left-[-120px] top-[-40px] opacity-75 bg-gradient-to-b from-violet-700 to-sky-400 rounded-full blur-[120px]" />
       <div className="w-64 h-64 absolute left-[80px] bottom-[-40px] opacity-75 bg-gradient-to-b from-green-500 to-amber-300 rounded-full blur-[120px]" />
       
-      <div className="flex-1 flex flex-col gap-4 relative z-10 p-4 overflow-hidden">
-        <SidebarHeader />
+      {/* Scrollable content wrapper - hide scrollbar but allow scrolling */}
+      <div className="flex-1 flex flex-col relative z-10 overflow-y-auto scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+        <style jsx>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         
-        <SidebarMenu activeItem={activeItem} setActiveItem={setActiveItem} />
+        <div className="flex flex-col gap-4 p-4 min-h-full">
+          <SidebarHeader />
+          
+          <SidebarMenu activeItem={activeItem} setActiveItem={setActiveItem} />
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <ConversationSection />
-        </div>
+          <div className="flex-1">
+            <ConversationSection />
+          </div>
 
-        <div className="flex-shrink-0">
-          <AccountSection />
+          <div className="flex-shrink-0 mt-auto">
+            <AccountSection />
+          </div>
         </div>
       </div>
     </div>

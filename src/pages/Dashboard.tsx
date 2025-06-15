@@ -1,4 +1,3 @@
-
 import { Search, Bell, Home, MessageSquare, MoreHorizontal } from "lucide-react";
 import Sidebar from '@/components/dashboard/Sidebar';
 import Header from '@/components/dashboard/Header';
@@ -14,7 +13,7 @@ const Dashboard = () => {
   const timeframeOptions = ['Day', 'Month', 'Year'];
 
   return (
-    <div className="w-full h-screen bg-stone-50 overflow-hidden flex">
+    <div className="w-screen h-screen bg-stone-50 overflow-hidden flex">
       {/* Sidebar - Fixed width */}
       <div className="w-80 flex-shrink-0 p-4">
         <Sidebar />
@@ -23,7 +22,7 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 p-4 overflow-hidden">
         {/* Header */}
-        <div className="mb-4">
+        <div className="mb-4 flex-shrink-0">
           <Header />
         </div>
 
@@ -105,7 +104,7 @@ const Dashboard = () => {
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Revenue Chart */}
-            <div className="h-56 relative bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-3">
+            <div className="h-64 relative bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-4">
               <div className="flex justify-between items-center mb-4">
                 <div className="text-zinc-600 text-sm font-normal font-['Poppins']">Total Revenue</div>
                 <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
@@ -114,17 +113,30 @@ const Dashboard = () => {
               </div>
               
               <div className="flex items-center gap-2 mb-4">
-                <div className="text-black text-lg font-medium font-['Poppins']">₹12,34,508</div>
+                <div className="text-black text-xl font-medium font-['Poppins']">₹12,34,508</div>
                 <div className="px-1.5 py-1 bg-lime-200 rounded text-green-700 text-xs font-medium">+24%</div>
                 <div className="text-neutral-500 text-xs font-normal">last month</div>
               </div>
               
-              {/* Chart placeholder */}
-              <div className="w-full h-24 bg-gradient-to-r from-blue-100 to-blue-200 rounded"></div>
+              {/* Chart with gradient background */}
+              <div className="w-full h-32 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300 rounded-lg relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-400/20 to-transparent"></div>
+                {/* Simple line chart representation */}
+                <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
+                  <path d="M0,80 Q75,60 150,45 T300,30" stroke="#3B82F6" strokeWidth="2" fill="none" className="opacity-80"/>
+                  <path d="M0,80 Q75,60 150,45 T300,30 L300,100 L0,100 Z" fill="url(#gradient)" className="opacity-40"/>
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3"/>
+                      <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.1"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
             </div>
 
             {/* Spending Chart */}
-            <div className="h-56 relative bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-3">
+            <div className="h-64 relative bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-4">
               <div className="flex justify-between items-center mb-4">
                 <div className="text-zinc-600 text-sm font-normal font-['Poppins']">Where You Spend the Most</div>
                 <button className="w-4 h-4 relative overflow-hidden hover:opacity-70 transition-opacity">
@@ -132,9 +144,9 @@ const Dashboard = () => {
                 </button>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 h-40">
+              <div className="grid grid-cols-2 gap-4 h-48">
                 {/* Legend */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { color: 'bg-blue-600', label: 'Fashion & Apparel', percentage: '35%' },
                     { color: 'bg-blue-400', label: 'Groceries & Essentials', percentage: '25%' },
@@ -143,18 +155,31 @@ const Dashboard = () => {
                     { color: 'bg-neutral-200', label: 'Others', percentage: '8%' }
                   ].map(({ color, label, percentage }) => (
                     <div key={label} className="flex justify-between items-center">
-                      <div className="flex items-center gap-1">
-                        <div className={`w-2 h-2 ${color} rounded-sm`} />
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 ${color} rounded-sm flex-shrink-0`} />
                         <div className="text-black text-xs font-normal font-['Poppins'] truncate">{label}</div>
                       </div>
-                      <div className="text-neutral-600 text-xs font-normal font-['Poppins']">{percentage}</div>
+                      <div className="text-neutral-600 text-xs font-normal font-['Poppins'] ml-2">{percentage}</div>
                     </div>
                   ))}
                 </div>
                 
-                {/* Chart placeholder */}
+                {/* Pie Chart */}
                 <div className="flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 via-blue-400 to-neutral-200"></div>
+                  <div className="w-24 h-24 rounded-full relative overflow-hidden">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      {/* Fashion & Apparel - 35% */}
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#2563EB" strokeWidth="20" strokeDasharray="87.96 251.32" strokeDashoffset="0"/>
+                      {/* Groceries - 25% */}
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#60A5FA" strokeWidth="20" strokeDasharray="62.83 251.32" strokeDashoffset="-87.96"/>
+                      {/* Electronics - 20% */}
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#A5B4FC" strokeWidth="20" strokeDasharray="50.27 251.32" strokeDashoffset="-150.79"/>
+                      {/* Home & Living - 12% */}
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#C7D2FE" strokeWidth="20" strokeDasharray="30.16 251.32" strokeDashoffset="-201.06"/>
+                      {/* Others - 8% */}
+                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#E5E7EB" strokeWidth="20" strokeDasharray="20.11 251.32" strokeDashoffset="-231.22"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -163,7 +188,7 @@ const Dashboard = () => {
           {/* Bottom Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Product Overview Table */}
-            <div className="lg:col-span-2 bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-3">
+            <div className="lg:col-span-2 bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-4">
               <div className="flex justify-between items-center mb-4">
                 <div className="text-zinc-600 text-sm font-normal font-['Poppins']">Product Overview</div>
                 <div className="flex items-center gap-2 text-xs">
@@ -225,7 +250,7 @@ const Dashboard = () => {
             </div>
 
             {/* Quick Alerts */}
-            <div className="bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-3">
+            <div className="bg-neutral-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-neutral-200 overflow-hidden p-4">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
                   <img src="/quick_alerts/eva_alert-triangle-fill.svg" alt="Quick Alerts" className="w-4 h-4" />
