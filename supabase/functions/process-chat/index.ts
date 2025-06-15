@@ -195,12 +195,11 @@ serve(async (req) => {
 
 async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
   try {
-    // Use a simpler approach for intent detection without relying on complex AI
     const lowerMessage = message.toLowerCase()
     
-    // Basic intent detection with fallback
+    // Enhanced intent detection
     let intent = 'general'
-    if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('buy') || lowerMessage.includes('looking for')) {
+    if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('buy') || lowerMessage.includes('looking for') || lowerMessage.includes('show me') || lowerMessage.includes('want')) {
       intent = 'product_search'
     } else if (lowerMessage.includes('compare') || lowerMessage.includes('price')) {
       intent = 'price_comparison'
@@ -212,10 +211,10 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
       intent = 'recommendations'
     }
 
-    // Basic entity extraction
+    // Enhanced entity extraction
     const entities: ExtractedEntities = {}
     
-    // Categories
+    // Categories - more comprehensive detection
     if (lowerMessage.includes('phone') || lowerMessage.includes('mobile') || lowerMessage.includes('smartphone')) {
       entities.category = 'electronics'
     } else if (lowerMessage.includes('laptop') || lowerMessage.includes('computer')) {
@@ -226,8 +225,8 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
       entities.category = 'electronics'
     }
     
-    // Brands
-    const brands = ['samsung', 'apple', 'nike', 'adidas', 'sony', 'lg', 'oneplus', 'xiaomi', 'realme']
+    // Brands - more comprehensive list
+    const brands = ['samsung', 'apple', 'nike', 'adidas', 'sony', 'lg', 'oneplus', 'xiaomi', 'realme', 'oppo', 'vivo', 'honor', 'motorola']
     for (const brand of brands) {
       if (lowerMessage.includes(brand)) {
         entities.brand = brand
@@ -235,19 +234,41 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
       }
     }
 
-    // Price extraction
-    const priceMatch = lowerMessage.match(/(\d+)\s*(?:to|-)?\s*(\d+)?\s*(?:rupees?|rs?|₹)/i)
-    if (priceMatch) {
-      entities.price_range = {
-        min: parseInt(priceMatch[1]),
-        max: priceMatch[2] ? parseInt(priceMatch[2]) : undefined
+    // Enhanced price extraction - handle various formats
+    const pricePatterns = [
+      /(\d+)\s*(?:to|-)?\s*(\d+)?\s*(?:rupees?|rs?|₹)/i,
+      /under\s+(\d+)/i,
+      /below\s+(\d+)/i,
+      /less\s+than\s+(\d+)/i,
+      /within\s+(\d+)/i
+    ]
+    
+    for (const pattern of pricePatterns) {
+      const match = lowerMessage.match(pattern)
+      if (match) {
+        if (pattern.source.includes('under|below|less|within')) {
+          // Single price limit (max)
+          entities.price_range = {
+            max: parseInt(match[1])
+          }
+        } else {
+          // Range or single price
+          entities.price_range = {
+            min: parseInt(match[1]),
+            max: match[2] ? parseInt(match[2]) : undefined
+          }
+        }
+        break
       }
     }
+
+    console.log('Extracted entities:', entities)
+    console.log('Detected intent:', intent)
 
     return {
       intent: intent,
       entities: entities,
-      language: 'en', // Default to English for now
+      language: 'en',
       confidence: 0.8,
       original_query: message,
       processed_query: message
@@ -267,7 +288,6 @@ async function processQueryWithAI(message: string): Promise<ProcessedQuery> {
 
 async function generateContextualResponse(query: ProcessedQuery, products: any[], intent: string): Promise<string> {
   try {
-    // Generate response without relying on external AI for now
     const fallbackResponses = {
       'product_search': `I found ${products.length} products matching your search criteria. Here are some great options for you!`,
       'price_comparison': `Here are the price comparisons for your selected products. I've found the best deals available.`,
@@ -288,6 +308,13 @@ async function generateContextualResponse(query: ProcessedQuery, products: any[]
     if (query.entities.brand) {
       response += ` Looking for ${query.entities.brand} products specifically.`
     }
+    if (query.entities.price_range) {
+      if (query.entities.price_range.max && !query.entities.price_range.min) {
+        response += ` Within your budget of ₹${query.entities.price_range.max}.`
+      } else if (query.entities.price_range.min && query.entities.price_range.max) {
+        response += ` In the price range of ₹${query.entities.price_range.min} to ₹${query.entities.price_range.max}.`
+      }
+    }
 
     return response
   } catch (error) {
@@ -306,6 +333,15 @@ async function intelligentProductScraping(entities: ExtractedEntities, originalQ
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
+    console.log('Calling scrape-products function with:', {
+      keywords: originalQuery,
+      category: entities.category,
+      min_price: entities.price_range?.min,
+      max_price: entities.price_range?.max,
+      brand: entities.brand,
+      site: 'amazon'
+    })
+
     const { data, error } = await supabaseClient.functions.invoke('scrape-products', {
       body: {
         keywords: originalQuery,
@@ -313,9 +349,11 @@ async function intelligentProductScraping(entities: ExtractedEntities, originalQ
         min_price: entities.price_range?.min,
         max_price: entities.price_range?.max,
         brand: entities.brand,
-        site: 'amazon' // Default to Amazon
+        site: 'amazon'
       }
     })
+
+    console.log('Scrape-products response:', { data, error })
 
     if (error) {
       console.error('Scraping function error:', error)
@@ -327,6 +365,7 @@ async function intelligentProductScraping(entities: ExtractedEntities, originalQ
       return data.products
     }
 
+    console.log('No products returned from scraper, using fallback')
     return getFallbackProducts(entities, originalQuery)
 
   } catch (error) {
