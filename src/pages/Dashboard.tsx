@@ -1,3 +1,4 @@
+
 import { Search, Bell, Home, MessageSquare, MoreHorizontal } from "lucide-react";
 import Sidebar from '@/components/dashboard/Sidebar';
 import Header from '@/components/dashboard/Header';
@@ -29,7 +30,7 @@ const Dashboard = () => {
         <Header />
       </div>
 
-      {/* Stats Cards Container - adjusted left position */}
+      {/* Stats Cards Container - increased width to better fill the window */}
       <div className="w-[984px] left-[436px] top-[124px] absolute inline-flex justify-between items-center">
         {/* Voice Orders Card */}
         <div className="w-60 h-[156px] px-2.5 py-3 relative bg-neutral-50 hover:bg-slate-950 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 hover:outline-black inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden transition-all duration-300 group">
