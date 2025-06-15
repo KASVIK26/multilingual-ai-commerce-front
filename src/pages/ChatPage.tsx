@@ -6,11 +6,14 @@ import ChatInterface from '@/components/chat/ChatInterface';
 
 const ChatPage = () => {
   return (
-    <div className="h-screen w-screen flex bg-stone-50 overflow-hidden">
-      <Sidebar />
+    <div className="h-screen w-full flex bg-stone-50 overflow-hidden">
+      {/* Sidebar - Fixed width */}
+      <div className="w-80 flex-shrink-0 p-4">
+        <Sidebar />
+      </div>
       
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="p-5 border-b">
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="p-4 border-b">
           <ChatHeader />
         </div>
         
