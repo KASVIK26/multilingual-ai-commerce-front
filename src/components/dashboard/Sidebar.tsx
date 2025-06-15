@@ -21,28 +21,16 @@ const Sidebar = () => {
 
   return (
     <div className="w-[25vw] min-w-[320px] max-w-[400px] h-screen bg-stone-300/20 rounded-2xl outline outline-1 outline-offset-[-1px] outline-gray-200 overflow-hidden relative flex-shrink-0">
-      <style>
-        {`
-          .sidebar-scroll::-webkit-scrollbar {
-            display: none;
-          }
-          .sidebar-scroll {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-          }
-        `}
-      </style>
-
       {/* Background gradients */}
       <div className="w-80 h-80 absolute left-[-191px] top-[-57px] opacity-75 bg-gradient-to-b from-violet-700 to-sky-400 rounded-full blur-[184.05px]" />
       <div className="w-80 h-80 absolute left-[132px] top-[867px] opacity-75 bg-gradient-to-b from-green-500 to-amber-300 rounded-full blur-[184.05px]" />
       
-      <div className="w-[90%] mx-auto h-full overflow-y-auto sidebar-scroll flex flex-col gap-6 relative z-10 py-5 px-4">
+      <div className="w-[90%] mx-auto h-full flex flex-col gap-6 relative z-10 py-5 px-4">
         <SidebarHeader />
         
         <SidebarMenu activeItem={activeItem} setActiveItem={setActiveItem} />
 
-        <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           <ConversationSection />
         </div>
 

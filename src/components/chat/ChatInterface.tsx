@@ -30,17 +30,9 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen">
+    <div className="flex flex-col h-screen w-full">
       {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style>
-          {`
-            .overflow-y-auto::-webkit-scrollbar {
-              display: none;
-            }
-          `}
-        </style>
-        
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         <div className="flex flex-col items-center justify-center min-h-full p-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center">
@@ -85,7 +77,7 @@ const ChatInterface = () => {
       </div>
 
       {/* Fixed Input Area */}
-      <div className="border-t bg-white p-4 flex justify-center">
+      <div className="border-t bg-white p-4 flex justify-center flex-shrink-0">
         <div className="w-full max-w-5xl">
           <ChatInput 
             message={message}
