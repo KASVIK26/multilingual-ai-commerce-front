@@ -49,11 +49,13 @@ const MyAccountPage = () => {
       
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <style jsx>{`
-            .overflow-y-auto::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
+          <style>
+            {`
+              .overflow-y-auto::-webkit-scrollbar {
+                display: none;
+              }
+            `}
+          </style>
           
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">

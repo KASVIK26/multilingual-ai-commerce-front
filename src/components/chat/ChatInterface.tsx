@@ -33,11 +33,13 @@ const ChatInterface = () => {
     <div className="flex flex-col h-full">
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style jsx>{`
-          .overflow-y-auto::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
+        <style>
+          {`
+            .overflow-y-auto::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
         
         <div className="flex flex-col items-center justify-center min-h-full p-4">
           {messages.length === 0 ? (
