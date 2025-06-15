@@ -347,7 +347,7 @@ async function intelligentProductScraping(entities: ExtractedEntities, originalQ
   try {
     console.log('Starting product scraping for:', { entities, originalQuery })
 
-    // Call the scrape-products edge function
+    // Call the enhanced scrape-products edge function
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -381,7 +381,7 @@ async function intelligentProductScraping(entities: ExtractedEntities, originalQ
     }
 
     if (data?.products && data.products.length > 0) {
-      console.log(`Successfully scraped ${data.products.length} products`)
+      console.log(`Successfully retrieved ${data.products.length} products (source: ${data.source || 'unknown'})`)
       return data.products
     }
 
