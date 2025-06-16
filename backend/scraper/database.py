@@ -3,6 +3,7 @@ import logging
 from typing import List, Dict
 from supabase import create_client, Client
 from config import SUPABASE_URL, SUPABASE_KEY
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,7 +44,28 @@ class ProductDatabase:
                 # Remove None values
                 processed_product = {k: v for k, v in processed_product.items() if v is not None}
                 processed_products.append(processed_product)
-            
+            def log_product_keys(products):
+                print("\n🔍 Checking all product keys...")
+                keys_list = [set(p.keys()) for p in products]
+                base_keys = keys_list[0]
+                for i, keys in enumerate(keys_list):
+                    if keys != base_keys:
+                        print(f"❌ Mismatch in product {i}")
+                        print(f"Expected keys: {sorted(list(base_keys))}")
+                        print(f"Found keys:    {sorted(list(keys))}")
+                        missing = base_keys - keys
+                        extra = keys - base_keys
+                        if missing:
+                            print(f"  🔻 Missing: {missing}")
+                        if extra:
+                            print(f"  🔺 Extra:   {extra}")
+                        print(json.dumps(products[i], indent=2))
+                        break
+                else:
+                    print("✅ All product dicts have consistent keys.")
+
+            # Call this inside your store function just before insert
+            log_product_keys(products)
             # Insert products into database
             result = self.supabase.table('products').upsert(
                 processed_products,
