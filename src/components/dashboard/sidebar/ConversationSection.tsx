@@ -27,7 +27,7 @@ const ConversationSection = ({}: ConversationSectionProps) => {
       // Check if the deleted chat is the currently active chat or if all chats were cleared
       if (currentChatId && (currentChatId === deletedChatId || deletedChatId === '*')) {
         console.log('Current chat was deleted, redirecting to new chat...');
-        handleCurrentChatDeleted(); // Clear the chat state
+        handleCurrentChatDeleted(deletedChatId); // Pass the deleted chat ID
         navigate('/chat'); // Redirect to new chat page
       }
     });
@@ -45,10 +45,19 @@ const ConversationSection = ({}: ConversationSectionProps) => {
 
   const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
+    
+    // Show confirmation dialog
+    const confirmed = window.confirm('Are you sure you want to delete this chat? This will permanently delete all messages and related data.');
+    
+    if (!confirmed) {
+      return;
+    }
+    
     try {
       await deleteChat(chatId);
     } catch (error) {
       console.error('Failed to delete chat:', error);
+      alert('Failed to delete chat. Please try again.');
     }
   };
 

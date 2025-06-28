@@ -283,12 +283,32 @@ export const useChat = () => {
   }, []);
 
   // Function to handle when current chat is deleted externally
-  const handleCurrentChatDeleted = useCallback(() => {
-    // Clear current chat state and cache
-    setCurrentChatId(null);
-    setMessages([]);
-    if (currentChatId) {
-      chatCache.delete(currentChatId);
+  const handleCurrentChatDeleted = useCallback((deletedChatId: string) => {
+    // Check if all chats were cleared or if the deleted chat is the currently active chat
+    if (deletedChatId === '*' || currentChatId === deletedChatId) {
+      console.log(`🗑️ Current active chat ${currentChatId} was deleted, redirecting to new chat`);
+      
+      // Clear current chat state and cache
+      setCurrentChatId(null);
+      setMessages([]);
+      
+      if (deletedChatId === '*') {
+        // Clear all cache if all chats were deleted
+        chatCache.clear();
+      } else {
+        // Just remove the specific chat from cache
+        chatCache.delete(deletedChatId);
+      }
+      
+      // Redirect to new chat by removing chatId from URL
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('chatId');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } else {
+      // Just remove from cache if it's not the current chat
+      chatCache.delete(deletedChatId);
     }
   }, [currentChatId]);
 

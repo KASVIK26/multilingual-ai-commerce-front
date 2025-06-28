@@ -1,11 +1,14 @@
 
 import React, { useState } from 'react';
-import { Search, Bell, User, ChevronDown, ShoppingCart } from 'lucide-react';
+import { Search, Bell, ChevronDown, ShoppingCart } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProfileCard from './ProfileCard';
 import NotificationCard from './NotificationCard';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
+import UserAvatar from '@/components/ui/UserAvatar';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatHeaderProps {
   isCartOpen: boolean;
@@ -20,6 +23,8 @@ const ChatHeader = ({ isCartOpen, setIsCartOpen, getCartItemCount }: ChatHeaderP
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { chatHistory } = useChatHistory();
+  const { getDisplayName } = useUserProfile();
+  const { user: authUser } = useAuth();
 
   const currentChatId = searchParams.get('chatId');
   
@@ -38,13 +43,6 @@ const ChatHeader = ({ isCartOpen, setIsCartOpen, getCartItemCount }: ChatHeaderP
     
     const currentChat = allChats.find(chat => chat.id === currentChatId);
     return currentChat?.title || 'Chat';
-  };
-
-  // Mock user data
-  const user = {
-    name: 'Vikas',
-    email: 'kasvik333@gmail.com',
-    avatar: ''
   };
 
   // No hardcoded notifications - start with empty array
@@ -125,9 +123,9 @@ const ChatHeader = ({ isCartOpen, setIsCartOpen, getCartItemCount }: ChatHeaderP
           </button>
           <button 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-11 h-11 rounded-full hover:scale-110 transition-transform cursor-pointer bg-blue-500 flex items-center justify-center text-white"
+            className="hover:scale-110 transition-transform cursor-pointer"
           >
-            <User size={20} />
+            <UserAvatar size="md" />
           </button>
         </div>
       </div>
@@ -135,7 +133,11 @@ const ChatHeader = ({ isCartOpen, setIsCartOpen, getCartItemCount }: ChatHeaderP
       <ProfileCard
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
-        user={user}
+        user={{
+          name: getDisplayName(),
+          email: authUser?.email || '',
+          avatar: undefined
+        }}
         onLogout={handleLogout}
       />
       

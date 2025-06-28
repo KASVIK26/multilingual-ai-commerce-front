@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { X, User, Settings, CreditCard, Package, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 interface ProfileCardProps {
   isOpen: boolean;
@@ -38,13 +39,7 @@ const ProfileCard = ({ isOpen, onClose, user, onLogout }: ProfileCardProps) => {
       
       <div className="p-4">
         <div className="flex items-center gap-3 mb-6">
-          {user.avatar ? (
-            <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full" />
-          ) : (
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <UserAvatar size="lg" />
           <div>
             <h4 className="font-medium">{user.name}</h4>
             <p className="text-sm text-gray-500">{user.email}</p>

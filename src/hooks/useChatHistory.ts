@@ -139,17 +139,52 @@ export const useChatHistory = () => {
 
   const deleteChat = useCallback(async (chatId: string) => {
     try {
-      const { error } = await supabase
-        .from('chats')
-        .update({ 
-          status: 'deleted',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', chatId);
-
-      if (error) {
-        throw error;
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
       }
+
+      // Start a transaction to delete all related data
+      console.log(`🗑️ Starting cascade delete for chat: ${chatId}`);
+
+      // 1. Delete search results (cascades from search queries)
+      // 2. Delete search queries (this will cascade delete search_results)
+      const { error: searchError } = await supabase
+        .from('search_queries')
+        .delete()
+        .eq('chat_id', chatId)
+        .eq('user_id', user.id);
+
+      if (searchError) {
+        console.error('Error deleting search queries:', searchError);
+        // Continue with deletion even if this fails
+      }
+
+      // 3. Delete messages (will cascade from chat deletion, but let's be explicit)
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('chat_id', chatId);
+
+      if (messagesError) {
+        console.error('Error deleting messages:', messagesError);
+        // Continue with deletion even if this fails
+      }
+
+      // 4. Finally, delete the chat itself
+      const { error: chatError } = await supabase
+        .from('chats')
+        .delete()
+        .eq('id', chatId)
+        .eq('user_id', user.id);
+
+      if (chatError) {
+        throw chatError;
+      }
+
+      console.log(`✅ Successfully deleted chat and all related data: ${chatId}`);
 
       // Refresh chat history
       await fetchChatHistory();
@@ -171,19 +206,20 @@ export const useChatHistory = () => {
         throw new Error('User not authenticated');
       }
 
-      // Update all active chats to deleted status
-      const { error } = await supabase
+      console.log(`🗑️ Starting cascade delete for all chats for user: ${user.id}`);
+
+      // Delete all active chats for this user - this will cascade delete messages and search queries
+      const { error: chatError } = await supabase
         .from('chats')
-        .update({ 
-          status: 'deleted',
-          updated_at: new Date().toISOString()
-        })
+        .delete()
         .eq('user_id', user.id)
         .eq('status', 'active');
 
-      if (error) {
-        throw error;
+      if (chatError) {
+        throw chatError;
       }
+
+      console.log(`✅ Successfully deleted all chats and related data for user: ${user.id}`);
 
       // Refresh chat history from database
       await fetchChatHistory();

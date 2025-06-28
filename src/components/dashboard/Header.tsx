@@ -3,9 +3,12 @@ import { Search, Bell, User } from "lucide-react";
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfileCard from '../chat/ProfileCard';
+import UserAvatar from '@/components/ui/UserAvatar';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const Header = () => {
   const { user, signOut } = useAuth();
+  const { getDisplayName } = useUserProfile();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -53,15 +56,13 @@ const Header = () => {
             className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             {user ? (
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                {getInitials()}
-              </div>
+              <UserAvatar size="sm" />
             ) : (
               <User className="w-8 h-8 text-gray-600" />
             )}
             <div className="text-left hidden sm:block">
               <div className="text-sm font-medium text-gray-900">
-                {user?.fullName || user?.email || 'Guest'}
+                {getDisplayName()}
               </div>
               <div className="text-xs text-gray-500">
                 {user?.email || 'Not logged in'}
@@ -77,7 +78,7 @@ const Header = () => {
           isOpen={isProfileOpen}
           onClose={() => setIsProfileOpen(false)}
           user={{
-            name: user.fullName || user.email,
+            name: getDisplayName(),
             email: user.email,
             avatar: undefined
           }}
