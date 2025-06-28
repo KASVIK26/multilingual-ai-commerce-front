@@ -1,27 +1,135 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import SuggestedActions from './SuggestedActions';
 import ChatInput from './ChatInput';
 import ChatMessage from './ChatMessage';
 import ProductDetailModal from './ProductDetailModal';
-import CartCard from './CartCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@/hooks/useChat';
-import { useCart } from '@/hooks/useCart';
 
-const ChatInterface = () => {
+interface Product {
+  id: string;
+  title: string;
+  price: string;
+  image: string;
+  link: string;
+  is_amazon_choice: boolean;
+  rating?: string;
+  review_count?: string;
+}
+
+interface ChatInterfaceProps {
+  addToCart: (product: Product, size?: string, color?: string) => Promise<void>;
+}
+
+const ChatInterface = ({ addToCart }: ChatInterfaceProps) => {
   const [message, setMessage] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
+  const [searchParams] = useSearchParams();
+  const loadingChatIdRef = useRef<string | null>(null);
   
-  const { messages, isLoading, processUserMessage } = useChat();
-  const { cartItems, isCartOpen, setIsCartOpen, addToCart, updateQuantity, removeFromCart, checkout } = useCart();
+  const { messages, isLoading, processUserMessage, loadChatHistory, currentChatId, startNewChat, handleCurrentChatDeleted } = useChat();
+
+  // Load chat history when chatId parameter is present, or start new chat when no chatId
+  useEffect(() => {
+    const chatId = searchParams.get('chatId');
+    
+    console.log('🔄 ChatInterface useEffect:', { 
+      chatId, 
+      currentChatId, 
+      isCreatingNewChat, 
+      isInitialLoad, 
+      messagesLength: messages.length 
+    });
+    
+    // Skip loading if we're creating a new chat
+    if (isCreatingNewChat) {
+      console.log('⏸️ Skipping useEffect - creating new chat');
+      return;
+    }
+    
+    // Skip loading if this is the initial load and we're setting up the component
+    if (isInitialLoad) {
+      console.log('🚀 Initial load');
+      setIsInitialLoad(false);
+      
+      if (chatId && chatId !== currentChatId) {
+        console.log('📂 Loading existing chat on initial load:', chatId);
+        // Load existing chat only on initial load
+        loadChatHistory(chatId);
+      } else if (!chatId && currentChatId) {
+        console.log('🆕 Starting new chat (URL has no chatId but currentChatId exists)');
+        // If there's no chatId in URL but we have a current chat, start a new one
+        startNewChat();
+      }
+      return;
+    }
+    
+    // For subsequent URL changes, only load if it's a different chat
+    if (chatId && chatId !== currentChatId) {
+      console.log('🔄 Chat ID changed:', { from: currentChatId, to: chatId });
+      
+      // Prevent loading the same chat if it's already being loaded
+      if (loadingChatIdRef.current === chatId) {
+        console.log('⏸️ Already loading this chat:', chatId);
+        return;
+      }
+      
+      // Don't load chat history if we just created this chat (it should already be in state)
+      if (isCreatingNewChat) {
+        console.log('⏸️ Skipping load - creating new chat:', chatId);
+        return;
+      }
+      
+      console.log('📂 Loading chat history for:', chatId);
+      loadingChatIdRef.current = chatId;
+      // Load different chat (always load when switching between chats)
+      loadChatHistory(chatId).finally(() => {
+        loadingChatIdRef.current = null;
+      });
+    } else if (!chatId && currentChatId && messages.length > 0) {
+      console.log('🆕 Starting new chat (no URL chatId but have currentChatId)');
+      // If URL changes to no chatId but we have an active chat with messages, start new
+      startNewChat();
+    }
+    // If no chatId in URL and no current chat = ready for new chat (do nothing)
+  }, [searchParams, currentChatId, loadChatHistory, startNewChat, isInitialLoad, isCreatingNewChat]);
+
+  // Reset the creating new chat flag when a chatId appears in URL and currentChatId is updated
+  useEffect(() => {
+    const chatId = searchParams.get('chatId');
+    // Only reset when we have both the URL chatId and the currentChatId is updated to match
+    if (chatId && isCreatingNewChat && chatId === currentChatId) {
+      console.log('✅ New chat creation complete, resetting flag:', chatId);
+      // Small delay to ensure all state updates are complete
+      const timer = setTimeout(() => {
+        setIsCreatingNewChat(false);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, isCreatingNewChat, currentChatId]);
 
   const handleSendMessage = async () => {
     if (message.trim() && !isLoading) {
-      await processUserMessage(message);
-      setMessage('');
+      // If we're sending a message without a currentChatId, we're creating a new chat
+      if (!currentChatId) {
+        setIsCreatingNewChat(true);
+      }
+      
+      try {
+        await processUserMessage(message);
+        setMessage('');
+      } catch (error) {
+        // Reset the flag only on error, success case is handled by useEffect
+        setIsCreatingNewChat(false);
+        throw error;
+      }
     }
   };
 
@@ -51,7 +159,20 @@ const ChatInterface = () => {
                 
                 {/* Suggested Actions */}
                 <div className="w-full">
-                  <SuggestedActions onActionClick={(action) => processUserMessage(action)} />
+                  <SuggestedActions onActionClick={async (action) => {
+                    // If we're sending a message without a currentChatId, we're creating a new chat
+                    if (!currentChatId) {
+                      setIsCreatingNewChat(true);
+                    }
+                    
+                    try {
+                      await processUserMessage(action);
+                    } catch (error) {
+                      // Reset the flag only on error, success case is handled by useEffect
+                      setIsCreatingNewChat(false);
+                      throw error;
+                    }
+                  }} />
                 </div>
               </div>
             ) : (
@@ -103,17 +224,6 @@ const ChatInterface = () => {
         onClose={() => setIsProductModalOpen(false)}
         onAddToCart={addToCart}
       />
-      
-      {isCartOpen && (
-        <CartCard
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          cartItems={cartItems}
-          onUpdateQuantity={updateQuantity}
-          onRemoveItem={removeFromCart}
-          onCheckout={checkout}
-        />
-      )}
     </div>
   );
 };

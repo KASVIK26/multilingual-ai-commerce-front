@@ -1,14 +1,44 @@
 
 import React, { useState } from 'react';
 import { Search, Bell, User, ChevronDown, ShoppingCart } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProfileCard from './ProfileCard';
 import NotificationCard from './NotificationCard';
-import { useCart } from '@/hooks/useCart';
+import { useChatHistory } from '@/hooks/useChatHistory';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const ChatHeader = () => {
+interface ChatHeaderProps {
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
+  getCartItemCount: () => number;
+}
+
+const ChatHeader = ({ isCartOpen, setIsCartOpen, getCartItemCount }: ChatHeaderProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { cartItems, isCartOpen, setIsCartOpen } = useCart();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { chatHistory } = useChatHistory();
+
+  const currentChatId = searchParams.get('chatId');
+  
+  // Find current chat title
+  const getCurrentChatTitle = () => {
+    if (!currentChatId) return 'New Chat';
+    
+    // Search through all chat history sections for the current chat
+    const allChats = [
+      ...chatHistory.today,
+      ...chatHistory.yesterday,
+      ...chatHistory.lastWeek,
+      ...chatHistory.lastMonth,
+      ...chatHistory.older
+    ];
+    
+    const currentChat = allChats.find(chat => chat.id === currentChatId);
+    return currentChat?.title || 'Chat';
+  };
 
   // Mock user data
   const user = {
@@ -17,17 +47,8 @@ const ChatHeader = () => {
     avatar: ''
   };
 
-  // Mock notifications
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      type: 'order' as const,
-      title: 'Order Shipped',
-      message: 'Your order #12345 has been shipped and will arrive tomorrow.',
-      timestamp: new Date(),
-      read: false
-    }
-  ]);
+  // No hardcoded notifications - start with empty array
+  const [notifications, setNotifications] = useState([]);
 
   const handleLogout = () => {
     console.log('Logout');
@@ -47,43 +68,58 @@ const ChatHeader = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleCartClick = () => {
-    console.log('Cart clicked, current cart state:', isCartOpen, 'items:', cartItems.length);
-    setIsCartOpen(!isCartOpen);
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isMobile) {
+      // On mobile, navigate to cart page
+      navigate('/cart');
+    } else {
+      // On desktop, toggle cart sidebar
+      setIsCartOpen(!isCartOpen);
+    }
   };
 
   return (
     <>
       <div className="w-full flex justify-between items-center">
-        <div className="w-36 h-11 p-3.5 bg-gray-200 rounded-[10px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
-          <div className="flex justify-between items-center w-full">
-            <div className="text-black text-base font-normal font-['Poppins']">English</div>
-            <ChevronDown size={16} />
+        <div className="flex items-center gap-4">
+          <div className="w-36 h-11 p-3.5 bg-gray-200 rounded-[10px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
+            <div className="flex justify-between items-center w-full">
+              <div className="text-black text-base font-normal font-['Poppins']">English</div>
+              <ChevronDown size={16} />
+            </div>
           </div>
+          {currentChatId && (
+            <div className="text-gray-600 text-lg font-medium">
+              {getCurrentChatTitle()}
+            </div>
+          )}
         </div>
         <div className="flex justify-start items-center gap-2.5">
-          <button className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer">
+          <button className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center hover:bg-gray-300 transition-colors cursor-pointer">
             <Search size={16} />
           </button>
           <button 
             onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-            className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer relative"
+            className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center hover:bg-gray-300 transition-colors cursor-pointer relative"
           >
             <Bell size={16} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {unreadCount}
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 z-10">
+                {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </button>
           <button
             onClick={handleCartClick}
-            className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center gap-2.5 overflow-hidden hover:bg-gray-300 transition-colors cursor-pointer relative"
+            className="w-11 h-11 bg-gray-200 rounded-[35px] flex justify-center items-center hover:bg-gray-300 transition-colors cursor-pointer relative"
           >
             <ShoppingCart size={16} />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {cartItems.length}
+            {getCartItemCount() > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 z-10">
+                {getCartItemCount() > 99 ? '99+' : getCartItemCount()}
               </span>
             )}
           </button>

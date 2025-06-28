@@ -143,21 +143,18 @@ const MyAccountPage = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex bg-stone-50 overflow-hidden">
-      <Sidebar />
-      
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <style>
-            {`
-              .overflow-y-auto::-webkit-scrollbar {
-                display: none;
-              }
-            `}
-          </style>
+    <div className="w-screen h-screen bg-stone-50 overflow-hidden flex">
+      {/* Sidebar - Fixed width */}
+      <div className="w-80 flex-shrink-0 p-4">
+        <Sidebar />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden p-4">
+        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           
           {/* Header with gradient background */}
-          <div className="relative bg-gradient-to-r from-violet-700 via-purple-700 to-sky-800 p-8">
+          <div className="relative bg-gradient-to-r from-violet-700 via-purple-700 to-sky-800 p-6">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10">
               <Button
@@ -288,9 +285,9 @@ const MyAccountPage = () => {
           )}
 
           {/* Profile Form */}
-          <div className="p-8">
+          <div className="p-4">
             <div className="max-w-4xl mx-auto">
-              <Card className="p-8">
+              <Card className="p-6">
                 <h2 className="text-2xl font-semibold mb-6 font-['Poppins']">Personal Information</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

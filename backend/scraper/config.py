@@ -1,4 +1,3 @@
-
 import os
 from dotenv import load_dotenv
 
@@ -7,6 +6,9 @@ load_dotenv()
 # Supabase configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://xaymwtshzpnxdammjwzz.supabase.co')
 SUPABASE_KEY = os.getenv('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhheW13dHNoenBueGRhbW1qd3p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0Njc4MDksImV4cCI6MjA2NTA0MzgwOX0.1CJou1MlUXzdLJmTwMEAZ5YmyQ7UtoFesKNrEDFcGHk')
+
+# For admin operations like scraping, we might need service role key
+SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)
 
 # Scraping configuration
 SCRAPING_DELAY = (2, 5)  # Random delay between requests

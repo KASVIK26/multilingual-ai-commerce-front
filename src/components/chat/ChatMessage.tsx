@@ -1,14 +1,17 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 
 interface Product {
   id: string;
   title: string;
+  description?: string;
+  specs?: string[];
   price: string;
   image: string;
   link: string;
   is_amazon_choice: boolean;
+  rating?: string;
+  review_count?: string;
 }
 
 interface ChatMessageProps {
@@ -18,6 +21,7 @@ interface ChatMessageProps {
     sender: 'user' | 'ai';
     timestamp: Date;
     products?: Product[];
+    extracted_features?: any; // Add this line
   };
   onAddToCart: (product: Product) => void;
   onProductClick: (product: Product) => void;
@@ -43,48 +47,120 @@ const ChatMessage = ({ message, onAddToCart, onProductClick }: ChatMessageProps)
               <div className="flex-1 p-5 bg-gradient-to-br from-violet-700/20 via-yellow-400/20 to-green-500/20 rounded-2xl shadow-[0px_3px_10px_0px_rgba(0,0,0,0.10)] flex flex-col justify-start items-start gap-4">
                 <div className="text-black text-base font-normal font-['Poppins']">{message.content}</div>
                 
+                {/* Display extracted features */}
+                {message.extracted_features && (
+                  <div className="w-full p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm font-semibold text-blue-800 mb-2">🤖 AI Analysis:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {message.extracted_features.category && (
+                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          Category: {message.extracted_features.category}
+                        </span>
+                      )}
+                      {message.extracted_features.brand && (
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          Brand: {message.extracted_features.brand}
+                        </span>
+                      )}
+                      {message.extracted_features.product_type && (
+                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                          Type: {message.extracted_features.product_type}
+                        </span>
+                      )}
+                      {message.extracted_features.max_price && (
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                          Max Price: ₹{message.extracted_features.max_price}
+                        </span>
+                      )}
+                      {message.extracted_features.min_price && (
+                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                          Min Price: ₹{message.extracted_features.min_price}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
                 {message.products && message.products.length > 0 && (
-                  <div className="w-full space-y-3">
+                  <div className="w-full space-y-4">
                     <p className="text-sm font-semibold text-gray-600">Found Products:</p>
-                    <div className="grid gap-3">
+                    <div className="grid gap-4">
                       {message.products.map((product) => (
-                        <Card key={product.id} className="p-3 hover:shadow-md transition-shadow cursor-pointer bg-white">
-                          <div className="flex gap-3">
+                        <Card key={product.id} className="p-4 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border border-gray-200">
+                          <div className="flex gap-4">
                             {product.image && (
-                              <img 
-                                src={product.image} 
-                                alt={product.title}
-                                className="w-16 h-16 object-cover rounded-md flex-shrink-0"
-                              />
+                              <div className="flex-shrink-0">
+                                <img 
+                                  src={product.image} 
+                                  alt={product.title}
+                                  className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop';
+                                  }}
+                                />
+                              </div>
                             )}
                             <div className="flex-1 min-w-0">
                               <h4 
-                                className="font-medium text-sm text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600"
+                                className="font-semibold text-base text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors mb-2"
                                 onClick={() => onProductClick(product)}
                               >
                                 {product.title}
                               </h4>
-                              <p className="text-lg font-bold text-green-600 mt-1">{product.price}</p>
-                              {product.is_amazon_choice && (
-                                <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full mt-1">
-                                  Amazon's Choice
-                                </span>
+                              
+                              {product.description && (
+                                <p className="text-sm text-gray-600 line-clamp-2 mb-2">{product.description}</p>
                               )}
-                              <div className="flex gap-2 mt-2">
+                              
+                              {product.specs && product.specs.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="flex flex-wrap gap-1">
+                                    {product.specs.slice(0, 3).map((spec, index) => (
+                                      <span key={index} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                                        {spec}
+                                      </span>
+                                    ))}
+                                    {product.specs.length > 3 && (
+                                      <span className="text-xs text-gray-500">+{product.specs.length - 3} more</span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center gap-3 mb-3">
+                                <p className="text-xl font-bold text-green-600">{product.price}</p>
+                                {product.rating && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-yellow-400">★</span>
+                                    <span className="text-sm font-medium">{product.rating}</span>
+                                    {product.review_count && (
+                                      <span className="text-xs text-gray-500">({product.review_count})</span>
+                                    )}
+                                  </div>
+                                )}
+                                {product.is_amazon_choice && (
+                                  <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
+                                    Amazon's Choice
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div className="flex gap-2">
                                 <button
                                   onClick={() => onAddToCart(product)}
-                                  className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors"
+                                  className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors font-medium"
                                 >
                                   Add to Cart
                                 </button>
-                                <a 
-                                  href={product.link} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600 transition-colors"
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    window.open(product.link, '_blank', 'noopener,noreferrer');
+                                  }}
+                                  className="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors font-medium"
                                 >
                                   View on Amazon
-                                </a>
+                                </button>
                               </div>
                             </div>
                           </div>

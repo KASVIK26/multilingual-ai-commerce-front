@@ -2,7 +2,7 @@
 import logging
 from typing import List, Dict
 from supabase import create_client, Client
-from config import SUPABASE_URL, SUPABASE_KEY
+from config import SUPABASE_URL, SUPABASE_KEY, SUPABASE_SERVICE_KEY
 import json
 
 logging.basicConfig(level=logging.INFO)
@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 class ProductDatabase:
     def __init__(self):
-        self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        # Use service role key for admin operations like scraping
+        self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     
     def store_products(self, products: List[Dict]) -> bool:
         """Store scraped products in the database"""
@@ -67,16 +68,25 @@ class ProductDatabase:
             # Call this inside your store function just before insert
             log_product_keys(products)
             # Insert products into database
-            result = self.supabase.table('products').upsert(
-                processed_products,
-                on_conflict='product_id'
-            ).execute()
-            
-            if result.data:
-                logger.info(f"Successfully stored {len(result.data)} products in database")
-                return True
-            else:
-                logger.error("Failed to store products - no data returned")
+            try:
+                result = self.supabase.table('products').upsert(
+                    processed_products,
+                    on_conflict='product_id'
+                ).execute()
+                
+                if result.data:
+                    logger.info(f"Successfully stored {len(result.data)} products in database")
+                    return True
+                else:
+                    logger.error("Failed to store products - no data returned")
+                    return False
+            except Exception as db_error:
+                logger.error(f"Database error: {db_error}")
+                # Check if it's an RLS policy error
+                if "row-level security" in str(db_error):
+                    logger.error("RLS Policy Error: The products table has Row Level Security enabled.")
+                    logger.error("Please run the SQL commands in fix_rls_policy.sql in your Supabase dashboard.")
+                    logger.error("Or configure SUPABASE_SERVICE_ROLE_KEY in your .env file.")
                 return False
                 
         except Exception as e:
