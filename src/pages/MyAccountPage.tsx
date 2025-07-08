@@ -13,16 +13,13 @@ import { supabase } from '@/lib/supabaseClient';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
-// Avatar options with modern, diverse professional avatars
+// Avatar options with Unsplash URLs
 const avatarOptions = [
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Professional man
-  'https://images.unsplash.com/photo-1494790108755-2616b5ff7cd9?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Professional woman
-  'https://images.unsplash.com/photo-1522556189639-b150ed9c4330?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Modern man
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Modern woman
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Business professional
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Young professional
-  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Confident professional
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face&auto=format&q=80', // Modern businesswoman
+  'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=150&h=150&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=150&h=150&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1501286353178-1ec881214838?w=150&h=150&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=150&h=150&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1441057206919-63d19fac2369?w=150&h=150&fit=crop&crop=face'
 ];
 
 const MyAccountPage = () => {
@@ -232,7 +229,7 @@ const MyAccountPage = () => {
                         onClick={handleCancel} 
                         variant="outline" 
                         disabled={isSaving}
-                        className="border-white/50 text-white hover:bg-white/20 hover:text-white bg-black/10 backdrop-blur-sm"
+                        className="border-white/30 text-white hover:bg-white/20"
                       >
                         Cancel
                       </Button>
@@ -246,47 +243,45 @@ const MyAccountPage = () => {
           {/* Avatar Selector Modal */}
           {showAvatarSelector && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <Card className="p-6 m-4 max-w-lg w-full">
-                <h3 className="text-lg font-semibold mb-4 text-center">Choose Your Avatar</h3>
-                <div className="grid grid-cols-4 gap-3 mb-6">
+              <Card className="p-6 m-4 max-w-md w-full">
+                <h3 className="text-lg font-semibold mb-4">Choose Your Avatar</h3>
+                <div className="grid grid-cols-3 gap-4 mb-4">
                   {avatarOptions.map((url, index) => (
                     <button
                       key={index}
                       onClick={() => handleAvatarSelect(url)}
-                      className="relative group flex items-center justify-center"
+                      className="relative group"
                     >
-                      <Avatar className={`w-16 h-16 transition-all duration-200 group-hover:scale-105 ${
-                        formData.avatar_url === url 
-                          ? 'ring-4 ring-blue-500 ring-offset-2' 
-                          : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1'
-                      }`}>
-                        <AvatarImage src={url} alt={`Avatar ${index + 1}`} className="object-cover" />
+                      <Avatar className="w-16 h-16 transition-transform group-hover:scale-110">
+                        <AvatarImage src={url} alt={`Avatar ${index + 1}`} />
                         <AvatarFallback>A{index + 1}</AvatarFallback>
                       </Avatar>
+                      {formData.avatar_url === url && (
+                        <div className="absolute inset-0 bg-blue-500/30 rounded-full flex items-center justify-center">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        </div>
+                      )}
                     </button>
                   ))}
                   {/* Default/No Avatar Option */}
                   <button
                     onClick={() => handleAvatarSelect('')}
-                    className="relative group flex items-center justify-center"
+                    className="relative group"
                   >
-                    <Avatar className={`w-16 h-16 transition-all duration-200 group-hover:scale-105 ${
-                      !formData.avatar_url 
-                        ? 'ring-4 ring-blue-500 ring-offset-2' 
-                        : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-1'
-                    }`}>
-                      <AvatarFallback className="bg-gradient-to-br from-violet-500 via-purple-600 to-blue-600 text-white font-semibold">
+                    <Avatar className="w-16 h-16 transition-transform group-hover:scale-110">
+                      <AvatarFallback className="bg-gradient-to-r from-violet-500 to-purple-600 text-white">
                         {getInitials()}
                       </AvatarFallback>
                     </Avatar>
+                    {!formData.avatar_url && (
+                      <div className="absolute inset-0 bg-blue-500/30 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      </div>
+                    )}
                   </button>
                 </div>
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={() => setShowAvatarSelector(false)} 
-                    variant="outline" 
-                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowAvatarSelector(false)} variant="outline" className="flex-1">
                     Cancel
                   </Button>
                 </div>
