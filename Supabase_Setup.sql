@@ -1,16 +1,16 @@
-
 -- =====================================================
--- COMPLETE SUPABASE SCHEMA WITH POLICIES & STORAGE
+-- COMPLETE SUPABASE DATABASE SETUP
+-- E-commerce Chat Application Schema
 -- =====================================================
 
--- Enable necessary extensions
+-- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================
--- 1. USERS TABLE (extends auth.users)
+-- CORE TABLES
 -- =====================================================
 
--- User profiles table (extends Supabase auth.users)
+-- User profiles (extends auth.users)
 CREATE TABLE public.user_profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email VARCHAR(255) NOT NULL,
@@ -31,13 +31,10 @@ CREATE TABLE public.user_profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- =====================================================
--- 2. PRODUCTS TABLE
--- =====================================================
-
+-- Products table
 CREATE TABLE public.products (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  product_id VARCHAR(100) UNIQUE NOT NULL, -- External product ID from scraper
+  product_id VARCHAR(100) UNIQUE NOT NULL,
   name VARCHAR(500) NOT NULL,
   description TEXT,
   short_description VARCHAR(200),
@@ -55,13 +52,13 @@ CREATE TABLE public.products (
   image_url TEXT,
   product_url TEXT,
   affiliate_url TEXT,
-  availability_status VARCHAR(50) DEFAULT 'in_stock', -- in_stock, low_stock, out_of_stock, discontinued
+  availability_status VARCHAR(50) DEFAULT 'in_stock',
   stock_quantity INTEGER,
   rating DECIMAL(3, 2),
   review_count INTEGER DEFAULT 0,
   specifications JSONB,
   features TEXT[],
-  dimensions JSONB, -- {"length": 10, "width": 5, "height": 3, "weight": 2.5, "unit": "cm"}
+  dimensions JSONB,
   color VARCHAR(50),
   size VARCHAR(50),
   material VARCHAR(100),
@@ -70,7 +67,7 @@ CREATE TABLE public.products (
   return_policy TEXT,
   region VARCHAR(100),
   country VARCHAR(100),
-  platform VARCHAR(50), -- amazon, flipkart, myntra, etc.
+  platform VARCHAR(50),
   seller_name VARCHAR(200),
   seller_rating DECIMAL(3, 2),
   platform_specific_data JSONB,
@@ -81,19 +78,16 @@ CREATE TABLE public.products (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- =====================================================
--- 3. CHATS TABLE
--- =====================================================
-
+-- Chats table
 CREATE TABLE public.chats (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE NOT NULL,
   title VARCHAR(255),
   summary TEXT,
-  status VARCHAR(20) DEFAULT 'active', -- active, archived, deleted
+  status VARCHAR(20) DEFAULT 'active',
   language VARCHAR(10) DEFAULT 'en',
-  chat_type VARCHAR(50) DEFAULT 'general', -- general, product_search, support, recommendation
-  context JSONB, -- Store search context, filters, etc.
+  chat_type VARCHAR(50) DEFAULT 'general',
+  context JSONB,
   metadata JSONB,
   last_message_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   message_count INTEGER DEFAULT 0,
@@ -101,18 +95,15 @@ CREATE TABLE public.chats (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- =====================================================
--- 4. MESSAGES TABLE
--- =====================================================
-
+-- Messages table
 CREATE TABLE public.messages (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   chat_id UUID REFERENCES public.chats(id) ON DELETE CASCADE NOT NULL,
   role VARCHAR(20) NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
   content TEXT NOT NULL,
-  message_type VARCHAR(50) DEFAULT 'text', -- text, product_list, product_card, action, image, file
-  metadata JSONB, -- Store product IDs, search filters, attachments, etc.
-  attachments JSONB, -- File URLs, image URLs, etc.
+  message_type VARCHAR(50) DEFAULT 'text',
+  metadata JSONB,
+  attachments JSONB,
   tokens_used INTEGER,
   processing_time_ms INTEGER,
   model_used VARCHAR(100),
@@ -123,7 +114,7 @@ CREATE TABLE public.messages (
 );
 
 -- =====================================================
--- 5. SEARCH QUERIES & NLP
+-- SEARCH & NLP TABLES
 -- =====================================================
 
 CREATE TABLE public.search_queries (
@@ -133,24 +124,20 @@ CREATE TABLE public.search_queries (
   message_id UUID REFERENCES public.messages(id) ON DELETE CASCADE,
   original_query TEXT NOT NULL,
   processed_query TEXT,
-  extracted_features JSONB, -- NLP extracted: category, price_range, brand, color, etc.
-  search_filters JSONB, -- Converted filters for scraper
-  search_intent VARCHAR(100), -- product_search, comparison, recommendation, etc.
+  extracted_features JSONB,
+  search_filters JSONB,
+  search_intent VARCHAR(100),
   query_language VARCHAR(10) DEFAULT 'en',
   results_count INTEGER DEFAULT 0,
   search_duration_ms INTEGER,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- =====================================================
--- 6. SEARCH RESULTS
--- =====================================================
-
 CREATE TABLE public.search_results (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   search_query_id UUID REFERENCES public.search_queries(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
-  relevance_score DECIMAL(5, 4), -- 0.0000 to 1.0000
+  relevance_score DECIMAL(5, 4),
   position_in_results INTEGER,
   match_reasons TEXT[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -158,7 +145,7 @@ CREATE TABLE public.search_results (
 );
 
 -- =====================================================
--- 7. SHOPPING CART
+-- SHOPPING & ORDERS
 -- =====================================================
 
 CREATE TABLE public.cart_items (
@@ -176,16 +163,14 @@ CREATE TABLE public.cart_items (
   UNIQUE(user_id, product_id, size, color)
 );
 
--- =====================================================
--- 8. ORDERS & ORDER ITEMS
--- =====================================================
+CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 1;
 
 CREATE TABLE public.orders (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE NOT NULL,
   order_number VARCHAR(50) UNIQUE NOT NULL,
-  status VARCHAR(50) DEFAULT 'pending', -- pending, confirmed, processing, shipped, delivered, cancelled, refunded
-  payment_status VARCHAR(50) DEFAULT 'pending', -- pending, paid, failed, refunded, partial_refund
+  status VARCHAR(50) DEFAULT 'pending',
+  payment_status VARCHAR(50) DEFAULT 'pending',
   total_amount DECIMAL(12, 2) NOT NULL,
   subtotal DECIMAL(12, 2) NOT NULL,
   tax_amount DECIMAL(12, 2) DEFAULT 0,
@@ -230,7 +215,7 @@ CREATE TABLE public.order_items (
 );
 
 -- =====================================================
--- 9. USER PREFERENCES & BEHAVIOR
+-- USER BEHAVIOR & PREFERENCES
 -- =====================================================
 
 CREATE TABLE public.user_preferences (
@@ -254,23 +239,19 @@ CREATE TABLE public.user_preferences (
   UNIQUE(user_id)
 );
 
--- =====================================================
--- 10. PRODUCT INTERACTIONS
--- =====================================================
-
 CREATE TABLE public.product_interactions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
-  interaction_type VARCHAR(50) NOT NULL, -- view, click, add_to_cart, purchase, like, share, compare
-  interaction_duration INTEGER, -- in seconds for view interactions
-  source VARCHAR(100), -- search, recommendation, chat, browse
+  interaction_type VARCHAR(50) NOT NULL,
+  interaction_duration INTEGER,
+  source VARCHAR(100),
   context JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
--- 11. WISHLISTS & FAVORITES
+-- WISHLISTS & FAVORITES
 -- =====================================================
 
 CREATE TABLE public.wishlists (
@@ -289,13 +270,13 @@ CREATE TABLE public.wishlist_items (
   wishlist_id UUID REFERENCES public.wishlists(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
   notes TEXT,
-  priority INTEGER DEFAULT 1, -- 1-5 priority
+  priority INTEGER DEFAULT 1,
   added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(wishlist_id, product_id)
 );
 
 -- =====================================================
--- 12. NOTIFICATIONS
+-- NOTIFICATIONS & SUGGESTIONS
 -- =====================================================
 
 CREATE TABLE public.notifications (
@@ -303,9 +284,9 @@ CREATE TABLE public.notifications (
   user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE NOT NULL,
   title VARCHAR(200) NOT NULL,
   message TEXT NOT NULL,
-  type VARCHAR(50) NOT NULL, -- price_drop, back_in_stock, order_update, recommendation, system
-  priority VARCHAR(20) DEFAULT 'normal', -- low, normal, high, urgent
-  data JSONB, -- Additional data like product_id, order_id, etc.
+  type VARCHAR(50) NOT NULL,
+  priority VARCHAR(20) DEFAULT 'normal',
+  data JSONB,
   is_read BOOLEAN DEFAULT FALSE,
   read_at TIMESTAMP WITH TIME ZONE,
   action_url TEXT,
@@ -313,25 +294,21 @@ CREATE TABLE public.notifications (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- =====================================================
--- 13. REORDER SUGGESTIONS
--- =====================================================
-
 CREATE TABLE public.reorder_suggestions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
   last_ordered_at TIMESTAMP WITH TIME ZONE,
-  order_frequency INTEGER, -- days between orders
+  order_frequency INTEGER,
   next_suggested_date DATE,
-  priority_score DECIMAL(5, 4), -- 0.0000 to 1.0000
-  status VARCHAR(20) DEFAULT 'active', -- active, dismissed, completed
+  priority_score DECIMAL(5, 4),
+  status VARCHAR(20) DEFAULT 'active',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
--- INDEXES FOR PERFORMANCE
+-- INDEXES
 -- =====================================================
 
 -- User profiles indexes
@@ -358,62 +335,146 @@ CREATE INDEX idx_messages_chat_id ON public.messages(chat_id);
 CREATE INDEX idx_messages_created_at ON public.messages(created_at DESC);
 CREATE INDEX idx_messages_role ON public.messages(role);
 
--- Search queries indexes
+-- Search indexes
 CREATE INDEX idx_search_queries_user_id ON public.search_queries(user_id);
 CREATE INDEX idx_search_queries_chat_id ON public.search_queries(chat_id);
 CREATE INDEX idx_search_queries_created_at ON public.search_queries(created_at DESC);
-
--- Search results indexes
 CREATE INDEX idx_search_results_query_id ON public.search_results(search_query_id);
 CREATE INDEX idx_search_results_product_id ON public.search_results(product_id);
 CREATE INDEX idx_search_results_relevance ON public.search_results(relevance_score DESC);
 
--- Cart indexes
+-- Shopping indexes
 CREATE INDEX idx_cart_items_user_id ON public.cart_items(user_id);
 CREATE INDEX idx_cart_items_product_id ON public.cart_items(product_id);
-
--- Orders indexes
 CREATE INDEX idx_orders_user_id ON public.orders(user_id);
 CREATE INDEX idx_orders_status ON public.orders(status);
 CREATE INDEX idx_orders_order_date ON public.orders(order_date DESC);
 CREATE INDEX idx_order_items_order_id ON public.order_items(order_id);
 
--- Interactions indexes
+-- Behavior indexes
 CREATE INDEX idx_product_interactions_user_id ON public.product_interactions(user_id);
 CREATE INDEX idx_product_interactions_product_id ON public.product_interactions(product_id);
 CREATE INDEX idx_product_interactions_type ON public.product_interactions(interaction_type);
 CREATE INDEX idx_product_interactions_created_at ON public.product_interactions(created_at DESC);
 
--- Notifications indexes
+-- Notification indexes
 CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON public.notifications(is_read);
 CREATE INDEX idx_notifications_created_at ON public.notifications(created_at DESC);
 
 -- =====================================================
--- TRIGGERS FOR AUTOMATIC UPDATES
+-- FUNCTIONS & TRIGGERS
 -- =====================================================
 
--- Function to update updated_at column
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+-- Function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
 
--- Create triggers for tables with updated_at columns
-CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_chats_updated_at BEFORE UPDATE ON public.chats FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_cart_items_updated_at BEFORE UPDATE ON public.cart_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON public.user_preferences FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_reorder_suggestions_updated_at BEFORE UPDATE ON public.reorder_suggestions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_wishlists_updated_at BEFORE UPDATE ON public.wishlists FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Function to generate order numbers
+CREATE OR REPLACE FUNCTION public.generate_order_number()
+RETURNS TEXT AS $$
+BEGIN
+    RETURN 'ORD-' || TO_CHAR(NOW(), 'YYYYMMDD') || '-' || LPAD(NEXTVAL('order_number_seq')::TEXT, 6, '0');
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to set order numbers
+CREATE OR REPLACE FUNCTION public.set_order_number()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.order_number IS NULL THEN
+        NEW.order_number = generate_order_number();
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to update product search vector
+CREATE OR REPLACE FUNCTION public.update_product_search_vector()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.search_vector = 
+    setweight(to_tsvector('english', COALESCE(NEW.name, '')), 'A') ||
+    setweight(to_tsvector('english', COALESCE(NEW.brand, '')), 'A') ||
+    setweight(to_tsvector('english', COALESCE(NEW.category, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(NEW.subcategory, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(NEW.description, '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(array_to_string(NEW.tags, ' '), '')), 'D');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to handle new user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, email, first_name, last_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'first_name',
+    NEW.raw_user_meta_data->>'last_name'
+  );
+  
+  INSERT INTO public.wishlists (user_id, name, is_default)
+  VALUES (NEW.id, 'My Wishlist', true);
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create triggers
+CREATE TRIGGER update_user_profiles_updated_at 
+    BEFORE UPDATE ON public.user_profiles 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_products_updated_at 
+    BEFORE UPDATE ON public.products 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_chats_updated_at 
+    BEFORE UPDATE ON public.chats 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_cart_items_updated_at 
+    BEFORE UPDATE ON public.cart_items 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_orders_updated_at 
+    BEFORE UPDATE ON public.orders 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_preferences_updated_at 
+    BEFORE UPDATE ON public.user_preferences 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_reorder_suggestions_updated_at 
+    BEFORE UPDATE ON public.reorder_suggestions 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_wishlists_updated_at 
+    BEFORE UPDATE ON public.wishlists 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER set_order_number_trigger
+    BEFORE INSERT ON public.orders
+    FOR EACH ROW EXECUTE FUNCTION public.set_order_number();
+
+CREATE TRIGGER update_product_search_vector_trigger
+    BEFORE INSERT OR UPDATE ON public.products
+    FOR EACH ROW EXECUTE FUNCTION update_product_search_vector();
+
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- =====================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
+-- ROW LEVEL SECURITY
 -- =====================================================
 
 -- Enable RLS on all tables
@@ -431,25 +492,23 @@ ALTER TABLE public.wishlists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wishlist_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reorder_suggestions ENABLE ROW LEVEL SECURITY;
-
--- Products table - read-only for users, admin access for management
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
--- User Profiles Policies
+-- User profiles policies
 CREATE POLICY "Users can view own profile" ON public.user_profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users can insert own profile" ON public.user_profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
--- Products Policies (public read access)
+-- Products policies
 CREATE POLICY "Anyone can view active products" ON public.products FOR SELECT USING (is_active = true);
 
--- Chats Policies
+-- Chats policies
 CREATE POLICY "Users can view own chats" ON public.chats FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can create own chats" ON public.chats FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own chats" ON public.chats FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own chats" ON public.chats FOR DELETE USING (auth.uid() = user_id);
 
--- Messages Policies
+-- Messages policies
 CREATE POLICY "Users can view messages in own chats" ON public.messages FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.chats WHERE chats.id = messages.chat_id AND chats.user_id = auth.uid())
 );
@@ -457,143 +516,87 @@ CREATE POLICY "Users can create messages in own chats" ON public.messages FOR IN
   EXISTS (SELECT 1 FROM public.chats WHERE chats.id = messages.chat_id AND chats.user_id = auth.uid())
 );
 
--- Search Queries Policies
+-- Search queries policies
 CREATE POLICY "Users can view own search queries" ON public.search_queries FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can create own search queries" ON public.search_queries FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Search Results Policies
+-- Search results policies
 CREATE POLICY "Users can view search results for own queries" ON public.search_results FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.search_queries WHERE search_queries.id = search_results.search_query_id AND search_queries.user_id = auth.uid())
 );
+CREATE POLICY "Users can create search results for own queries" ON public.search_results FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.search_queries WHERE search_queries.id = search_results.search_query_id AND search_queries.user_id = auth.uid())
+);
 
--- Cart Policies
+-- Cart policies
 CREATE POLICY "Users can manage own cart" ON public.cart_items FOR ALL USING (auth.uid() = user_id);
 
--- Orders Policies
+-- Orders policies
 CREATE POLICY "Users can view own orders" ON public.orders FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can create own orders" ON public.orders FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Order Items Policies
 CREATE POLICY "Users can view items in own orders" ON public.order_items FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid())
 );
 
--- User Preferences Policies
+-- User preferences policies
 CREATE POLICY "Users can manage own preferences" ON public.user_preferences FOR ALL USING (auth.uid() = user_id);
 
--- Product Interactions Policies
+-- Product interactions policies
 CREATE POLICY "Users can manage own interactions" ON public.product_interactions FOR ALL USING (auth.uid() = user_id);
 
--- Wishlists Policies
+-- Wishlists policies
 CREATE POLICY "Users can manage own wishlists" ON public.wishlists FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can view public wishlists" ON public.wishlists FOR SELECT USING (is_public = true);
-
--- Wishlist Items Policies
 CREATE POLICY "Users can manage items in own wishlists" ON public.wishlist_items FOR ALL USING (
   EXISTS (SELECT 1 FROM public.wishlists WHERE wishlists.id = wishlist_items.wishlist_id AND wishlists.user_id = auth.uid())
 );
 
--- Notifications Policies
+-- Notifications policies
 CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 
--- Reorder Suggestions Policies
+-- Reorder suggestions policies
 CREATE POLICY "Users can view own reorder suggestions" ON public.reorder_suggestions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own reorder suggestions" ON public.reorder_suggestions FOR UPDATE USING (auth.uid() = user_id);
 
 -- =====================================================
--- STORAGE BUCKETS
+-- STORAGE SETUP
 -- =====================================================
 
--- Insert storage buckets
+-- Create storage buckets
 INSERT INTO storage.buckets (id, name, public) VALUES 
 ('avatars', 'avatars', true),
 ('product-images', 'product-images', true),
 ('attachments', 'attachments', false),
 ('documents', 'documents', false);
 
--- Storage Policies for avatars bucket
+-- Storage policies for avatars
 CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
 CREATE POLICY "Users can upload their own avatar" ON storage.objects FOR INSERT WITH CHECK (
-  bucket_id = 'avatars' AND 
-  auth.uid()::text = (storage.foldername(name))[1]
+  bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]
 );
 CREATE POLICY "Users can update their own avatar" ON storage.objects FOR UPDATE USING (
-  bucket_id = 'avatars' AND 
-  auth.uid()::text = (storage.foldername(name))[1]
+  bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]
 );
 CREATE POLICY "Users can delete their own avatar" ON storage.objects FOR DELETE USING (
-  bucket_id = 'avatars' AND 
-  auth.uid()::text = (storage.foldername(name))[1]
+  bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]
 );
 
--- Storage Policies for product-images bucket
+-- Storage policies for product images
 CREATE POLICY "Product images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
 
--- Storage Policies for attachments bucket
+-- Storage policies for attachments
 CREATE POLICY "Users can view their own attachments" ON storage.objects FOR SELECT USING (
-  bucket_id = 'attachments' AND 
-  auth.uid()::text = (storage.foldername(name))[1]
+  bucket_id = 'attachments' AND auth.uid()::text = (storage.foldername(name))[1]
 );
 CREATE POLICY "Users can upload their own attachments" ON storage.objects FOR INSERT WITH CHECK (
-  bucket_id = 'attachments' AND 
-  auth.uid()::text = (storage.foldername(name))[1]
+  bucket_id = 'attachments' AND auth.uid()::text = (storage.foldername(name))[1]
 );
 
 -- =====================================================
--- FUNCTIONS FOR SEARCH AND RECOMMENDATIONS
+-- SAMPLE DATA
 -- =====================================================
 
--- Function to update product search vector
-CREATE OR REPLACE FUNCTION update_product_search_vector()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.search_vector = 
-    setweight(to_tsvector('english', COALESCE(NEW.name, '')), 'A') ||
-    setweight(to_tsvector('english', COALESCE(NEW.brand, '')), 'A') ||
-    setweight(to_tsvector('english', COALESCE(NEW.category, '')), 'B') ||
-    setweight(to_tsvector('english', COALESCE(NEW.subcategory, '')), 'B') ||
-    setweight(to_tsvector('english', COALESCE(NEW.description, '')), 'C') ||
-    setweight(to_tsvector('english', COALESCE(array_to_string(NEW.tags, ' '), '')), 'D');
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to update search vector on product changes
-CREATE TRIGGER update_product_search_vector_trigger
-BEFORE INSERT OR UPDATE ON public.products
-FOR EACH ROW EXECUTE FUNCTION update_product_search_vector();
-
--- Function to automatically create user profile after signup
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.user_profiles (id, email, first_name, last_name)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    NEW.raw_user_meta_data->>'first_name',
-    NEW.raw_user_meta_data->>'last_name'
-  );
-  
-  -- Create default wishlist
-  INSERT INTO public.wishlists (user_id, name, is_default)
-  VALUES (NEW.id, 'My Wishlist', true);
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger to create profile after user signup
-CREATE TRIGGER on_auth_user_created
-AFTER INSERT ON auth.users
-FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- =====================================================
--- SAMPLE DATA FOR TESTING
--- =====================================================
-
--- Sample products (run after schema creation)
 INSERT INTO public.products (product_id, name, description, price, category, brand, availability_status, rating, region, platform, tags, images) VALUES
 ('ELECTRONICS001', 'Apple iPhone 15 Pro Max 256GB', 'Latest iPhone with titanium build and A17 Pro chip', 134900.00, 'Electronics', 'Apple', 'in_stock', 4.8, 'India', 'amazon', ARRAY['smartphone', 'ios', 'camera', 'titanium'], ARRAY['https://example.com/iphone1.jpg', 'https://example.com/iphone2.jpg']),
 ('FASHION001', 'Nike Air Force 1 White Sneakers', 'Classic white sneakers for everyday wear', 7995.00, 'Fashion', 'Nike', 'in_stock', 4.6, 'India', 'myntra', ARRAY['shoes', 'sneakers', 'white', 'casual'], ARRAY['https://example.com/nike1.jpg']),

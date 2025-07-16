@@ -109,10 +109,6 @@ supabase/
    ```env
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-   Create a `.env` file in `backend/scraper/`:
-   ```env
    SUPABASE_URL=your_supabase_url
    SUPABASE_KEY=your_service_role_key
    HUGGINGFACE_API_KEY=your_huggingface_api_key
@@ -120,7 +116,7 @@ supabase/
 
 5. **Database Setup**
    - Create a new Supabase project
-   - Run the SQL schema from `supabase_schema.sql`
+   - Run the SQL schema from `supabase_setup.sql`
    - Deploy the edge functions from `supabase/functions/`
 
 6. **Start Development**
@@ -228,14 +224,10 @@ POST /functions/v1/scrape-products
 
 ### Environment Variables
 
-#### Frontend (.env)
+#### Environment Variables (.env in root)
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-#### Backend (backend/scraper/.env)
-```env
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_service_role_key
 SUPABASE_SERVICE_KEY=your_service_role_key
